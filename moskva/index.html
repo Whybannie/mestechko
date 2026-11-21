@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FFF6E8">
+<title>Месте4ко — куда идти в Москве</title>
+<meta name="description" content="Городской журнал о местах Москвы: адреса, цены, минусы, подборки и карта.">
+<meta property="og:title" content="Месте4ко — куда идти в Москве">
+<meta property="og:description" content="Москва: адреса, цены, минусы и лучшее время.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF6E8'/%3E%3Crect x='5' y='5' width='22' height='22' rx='6' fill='%23FF3B21'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='16' font-weight='bold' fill='%23fff' text-anchor='middle'%3E4%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800&family=Golos+Text:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/layout.css">
+<link rel="stylesheet" href="../css/components.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script src="js/data.js" defer></script>
+<script src="../js/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">К основному содержанию</a>
+
+<header class="hd" id="hd">
+  <div class="wrap hd-in">
+    <a class="logo" href="#top" aria-label="Месте4ко — на главную">Месте<span class="four">4</span>ко</a>
+    <nav aria-label="Разделы">
+      <a href="#collections" data-nav="collections">Подборки</a>
+      <a href="#places" data-nav="places">Места</a>
+      <a href="#map-sec" data-nav="map-sec">Карта</a>
+      <a href="#suggest" data-nav="suggest">Предложить</a>
+    </nav>
+    <div class="sp"></div>
+    <div class="city-sw" role="group" aria-label="Город"><a href="../" title="Новосибирск">НСК</a><a class="on" href="./" title="Москва">МСК</a></div>
+    <button class="saved-btn" id="savedBtn" type="button" aria-pressed="false">♥ Сохранённое <b id="savedCount">0</b></button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="hero-sun" id="heroSun" aria-hidden="true"></div>
+    <svg class="hero-river" id="heroRiver" viewBox="0 0 1200 110" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 58 Q150 18 300 58 T600 58 T900 58 T1200 58" fill="none" stroke="#00BFA6" stroke-width="4"/>
+      <path d="M0 90 Q150 50 300 90 T600 90 T900 90 T1200 90" fill="none" stroke="#1633FF" stroke-width="3" opacity=".5"/>
+    </svg>
+    <div class="wrap hero-grid">
+      <div>
+        <div class="issue stage d1"><i></i>Выпуск №1 · ноябрь 2026 · Москва</div>
+        <h1 class="stage d2">Куда идти<br><span class="mark">сегодня</span></h1>
+        <p class="deck stage d3">Первая версия по Москве: 10 адресов, пока черновик. Проверяем ногами и добавляем новые.</p>
+        <form class="search stage d4" id="searchForm" role="search">
+          <input id="q" type="search" aria-label="Поиск по местам" placeholder="Кофе, парк, свидание, с ребёнком…" autocomplete="off">
+          <button class="btn btn-red" type="submit">Найти</button>
+        </form>
+        <div class="want stage d5">
+          <div class="l">Что хочется?</div>
+          <div class="chips" id="chips"></div>
+        </div>
+      </div>
+      <aside class="route stage d6" aria-label="Маршрут от Зарядья до Кремля">
+        <div class="route-art" id="routeArt"></div>
+        <div class="route-plate"><span class="plate">54 / НСК</span><span class="route-tag">Маршрут</span></div>
+        <div class="route-b">
+          <h2>От Зарядья до Кремля</h2>
+          <div class="route-meta"><span class="rpill">1,8 км</span><span class="rpill">35 минут</span><span class="rpill">3 остановки</span><span class="rpill">Бесплатно</span></div>
+          <ol class="stops">
+            <li><span class="n">1</span>Зарядье — парящий мост и вид на реку</li>
+            <li><span class="n">2</span>Красная площадь — брусчатка и ГУМ</li>
+            <li><span class="n">3</span>Александровский сад — финиш у стен Кремля</li>
+          </ol>
+          <div class="route-actions">
+            <a class="btn btn-red" id="routeBuild" target="_blank" rel="noopener">Маршрут</a>
+            <button class="btn btn-line" id="routeOpen" type="button">Что по пути</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="sec band-amber" id="collections">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="sec-num">01 / Подборки</span>
+        <h2 class="sec-title">Готовые планы</h2>
+        <p class="deck">Восемь сценариев: вечер, выходной, дождь, пустой кошелёк.</p>
+      </div>
+      <div id="colFeatured"></div>
+      <div class="cols" id="colGrid"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="places">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="sec-num">02 / Каталог</span>
+        <h2 class="sec-title">Все места</h2>
+        <p class="deck">Фильтры слева меняют и ленту, и карту.</p>
+      </div>
+      <noscript><p style="padding:16px;border:2px dashed rgba(17,26,56,.3);border-radius:12px;margin-bottom:16px">Для поиска и фильтров включи JavaScript.</p></noscript>
+      <div class="places-grid">
+        <aside class="filters rv" aria-label="Фильтры">
+          <button class="btn btn-lime btn-block" id="randomBtn" type="button">Случайное место</button>
+          <div class="fgroup"><div class="fl">С кем</div><div class="seg" data-group="company">
+            <button type="button" data-val="any" class="on">Неважно</button><button type="button" data-val="two">Вдвоём</button><button type="button" data-val="friends">С друзьями</button><button type="button" data-val="kids">С детьми</button><button type="button" data-val="solo">Один</button>
+          </div></div>
+          <div class="fgroup"><div class="fl">Настроение</div><div class="seg" data-group="mood">
+            <button type="button" data-val="any" class="on">Любое</button><button type="button" data-val="quiet">Без суеты</button><button type="button" data-val="unusual">Необычное</button><button type="button" data-val="active">Подвигаться</button>
+          </div></div>
+          <div class="fgroup"><div class="fl">Бюджет на человека</div><div class="seg" data-group="budget">
+            <button type="button" data-val="any" class="on">Любой</button><button type="button" data-val="free">Бесплатно</button><button type="button" data-val="500">До 500 ₽</button><button type="button" data-val="1000">До 1 000 ₽</button><button type="button" data-val="2000">До 2 000 ₽</button>
+          </div></div>
+          <div class="fgroup"><div class="fl">Погода</div><div class="seg" data-group="weather">
+            <button type="button" data-val="any" class="on">Неважно</button><button type="button" data-val="in">Под крышей</button><button type="button" data-val="out">На улице</button>
+          </div></div>
+          <button class="fswitch" id="openTgl" type="button" aria-pressed="false">Открыто сейчас <span class="sw"></span></button>
+          <div class="fsort"><div class="fl">Порядок</div>
+            <select id="sortSel" aria-label="Порядок">
+              <option value="rec">Выбор редакции</option><option value="cheap">Сначала дешевле</option>
+              <option value="fresh">Недавно проверенные</option><option value="name">По названию</option>
+            </select>
+          </div>
+          <button class="btn btn-line btn-block btn-sm" id="resetBtn" type="button">Сбросить</button>
+          <p class="fnote">График обычный, не в реальном времени. Сеансы и места по записи не учитываем.</p>
+          <p class="fnote"><b>Цены без дороги и доплат.</b></p>
+        </aside>
+        <div>
+          <div class="results-head"><span class="rcount" id="countLine" aria-live="polite"></span><span class="rhint" id="activeHint"></span></div>
+          <div class="banner" id="banner"><b id="bannerName"></b><span id="bannerMeta"></span><button id="bannerClear" type="button">Показать все ✕</button></div>
+          <div class="grid" id="grid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec band-ink" id="map-sec">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="sec-num">03 / Карта</span>
+        <h2 class="sec-title">Город целиком</h2>
+        <p class="deck">Метки покрашены по разделам. Нажми метку или строку справа — откроется карточка.</p>
+      </div>
+      <div class="map-tools rv">
+        <button class="btn btn-lime btn-sm" id="mapFit" type="button">Показать все</button>
+        <button class="btn btn-lime btn-sm" id="mapGeo" type="button">Рядом со мной</button>
+        <span class="map-count" id="mapCount"></span>
+      </div>
+      <div class="map-grid rv">
+        <div class="map-wrap"><div id="cityMap"></div></div>
+        <div class="map-side">
+          <h3>На карте сейчас</h3>
+          <div class="map-list" id="mapList"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec band-teal" id="suggest">
+    <div class="wrap">
+      <div class="suggest rv">
+        <div>
+          <span class="sec-num">04 / Читатели</span>
+          <h2 class="sec-title">Чего не хватает?</h2>
+          <p>Напиши про своё место: что там делать, сколько стоит, когда идти. Съходим, проверим и поставим дату.</p>
+          <button class="btn btn-blue" id="suggestOpen" type="button">Предложить место</button>
+        </div>
+        <div class="suggest-art" id="suggestArt" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap ft">
+    <div>
+      <a class="logo" href="#top">Месте<span class="four">4</span>ко</a>
+      <div class="tag">Найди место для себя.</div>
+    </div>
+    <div class="links">
+      <button class="linklike" id="footReport" type="button">Нашли ошибку?</button>
+      <button class="linklike" id="footSources" type="button">Источники фото</button>
+      <a class="linklike" href="#suggest">Предложить место</a>
+    </div>
+    <div class="sp"></div>
+    <div class="ver"><b>Выпуск №1 · ноябрь 2026</b>Редакция Москвы<br>Черновик · данные проверяем</div>
+  </div>
+</footer>
+
+<dialog id="placeDlg" aria-labelledby="pdName">
+  <div class="dlg-cover" id="pdCover"><button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button></div>
+  <div class="dlg-b">
+    <div class="cat" id="pdCat"></div><h3 id="pdName"></h3><div class="dlg-addr" id="pdAddr"></div>
+    <p class="dlg-desc" id="pdDesc"></p><div class="minus" id="pdMinus"></div><div class="dlg-tags" id="pdTags"></div>
+    <div class="dlg-grid">
+      <div class="dlg-cell"><div class="l">Бюджет</div><div class="v" id="pdBudget"></div></div>
+      <div class="dlg-cell"><div class="l">Лучшее время</div><div class="v" id="pdBest"></div></div>
+      <div class="dlg-cell"><div class="l">График</div><div class="v" id="pdHours"></div></div>
+      <div class="dlg-cell"><div class="l">Особенности</div><div class="v" id="pdFeat"></div></div>
+    </div>
+    <div class="dlg-verify"><span class="stamp" id="pdStamp"></span><span class="src" id="pdSrc"></span><button class="linklike" id="pdReport" type="button">Нашли ошибку?</button></div>
+    <div class="dlg-actions">
+      <a class="btn btn-red" id="pdRoute" target="_blank" rel="noopener">Маршрут</a>
+      <button class="btn btn-blue" id="pdOnMap" type="button">На карте города</button>
+      <a class="btn btn-line" id="pdMap" target="_blank" rel="noopener">Яндекс Карты</a>
+      <button class="btn btn-line" id="pdSave" type="button" aria-pressed="false">Сохранить</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="routeDlg" aria-labelledby="rtTitle">
+  <div class="dlg-cover" id="rtCover"><button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button></div>
+  <div class="dlg-b">
+    <div class="cat">Маршрут · 54 / НСК</div><h3 id="rtTitle">От Зарядья до Кремля</h3>
+    <p class="dlg-desc">Центр пешком: парк, площадь и сад у кремлёвской стены. Лучше вечером, когда включают подсветку. Обратно — метро «Охотный Ряд».</p>
+    <div class="route-meta"><span class="rpill">1,8 км</span><span class="rpill">35 минут</span><span class="rpill">Бесплатно</span><span class="rpill">На улице</span></div>
+    <ol class="route-dlg-stops" id="rtStops"></ol>
+    <div class="minus"><b>Минус</b> Брусчатка и много людей: обувь удобная, в праздники бывают перекрытия.</div>
+    <div class="dlg-actions"><a class="btn btn-red" id="rtBuild" target="_blank" rel="noopener">Построить маршрут</a><button class="btn btn-line" data-close type="button">Закрыть</button></div>
+  </div>
+</dialog>
+
+<dialog id="suggestDlg" aria-labelledby="sgTitle">
+  <form class="dlg-form" id="suggestForm">
+    <h3 id="sgTitle">Предложить место</h3>
+    <p class="lead">Непроверенные адреса не публикуем: сначала съходим сами.</p>
+    <input class="field" name="name" placeholder="Название" required>
+    <input class="field" name="addr" placeholder="Адрес или район" required>
+    <select class="field" name="cat" required><option value="" disabled selected>Раздел</option><option>Поесть</option><option>Погулять</option><option>С детьми</option><option>Вдвоём</option><option>Поработать</option><option>Полезное</option><option>Другое</option></select>
+    <textarea class="field" name="story" placeholder="Что там делать, сколько стоит, когда лучше идти?" required></textarea>
+    <input class="field" name="contact" placeholder="Telegram или почта — по желанию">
+    <div class="form-row"><button class="btn btn-line" type="button" data-close>Отмена</button><button class="btn btn-red" type="submit">Отправить</button></div>
+  </form>
+  <div class="ok-panel" id="suggestOk">
+    <div class="big"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+    <h3>Принято</h3><p>Проверим и добавим с датой. Если оставил контакт — напишем.</p>
+    <button class="btn btn-line" id="suggestAgain" type="button">Ещё одно</button>
+  </div>
+</dialog>
+
+<dialog id="reportDlg" aria-labelledby="rpTitle">
+  <form class="dlg-form" id="reportForm">
+    <h3 id="rpTitle">Нашли ошибку?</h3>
+    <p class="lead">Место получит статус «На проверке», пока не перепроверим.</p>
+    <select class="field" id="rpPlace" aria-label="Место" required></select>
+    <select class="field" id="rpType" aria-label="Что не так" required><option value="" disabled selected>Что не так?</option><option>Закрылось</option><option>Изменились цены</option><option>Другой график</option><option>Неверный адрес</option><option>Особенности не те</option><option>Другое</option></select>
+    <textarea class="field" id="rpText" placeholder="Как на самом деле?" required></textarea>
+    <div class="form-row"><button class="btn btn-line" type="button" data-close>Отмена</button><button class="btn btn-red" type="submit">Отправить</button></div>
+  </form>
+</dialog>
+
+<dialog id="sourcesDlg" aria-labelledby="srcTitle">
+  <div class="dlg-form">
+    <h3 id="srcTitle">Источники фото</h3>
+    <p class="lead" id="srcLead"></p>
+    <ul class="src-list" id="srcList"></ul>
+    <div class="form-row" style="margin-top:16px"><button class="btn btn-line" data-close type="button">Закрыть</button></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" popover="manual"><span id="toastText"></span><button id="toastAct" type="button" hidden></button></div>
+</body>
+</html>
