@@ -1,22 +1,16 @@
-/* Месте4ко · app.js — фото из открытых источников, фильтры, окна, живое состояние */
+/* Месте4ко · app.js — фото, фильтры, журнал-сетка, карта, окна */
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const store={
-  get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-};
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 const S={q:'',tag:'all',company:'any',mood:'any',budget:'any',weather:'any',open:false,savedOnly:false,sort:'rec',col:null,
   saved:new Set(store.get('m4.saved',[])),reports:store.get('m4.reports',{})};
 let currentId=null,toastTimer=null,toastHide=null,lastRemoved=null;
-
 const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 const fmtDate=iso=>{const d=new Date(iso+'T12:00:00');return d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear()};
 const fmtShort=iso=>{const d=new Date(iso+'T12:00:00');return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')};
 function plural(n,f){const m=n%100;if(m>=11&&m<=14)return f[2];const k=n%10;return k===1?f[0]:k>=2&&k<=4?f[1]:f[2]}
-const placesWord=n=>plural(n,['место','места','мест']);
-
+const pw=n=>plural(n,['место','места','мест']);
 function openNow(p){
   if(p.hours==='24')return true;
   if(p.hours==='afisha')return null;
@@ -27,105 +21,63 @@ function openNow(p){
   return h>=o&&h<c;
 }
 const isLate=p=>p.hours==='24'||(p.hours!=='afisha'&&(p.hours.c===24||p.hours.c<=p.hours.o||p.hours.c>22));
-const openBadge=p=>{const o=openNow(p);return o===true?'<span class="pill o">Открыто сейчас</span>':o===null?'<span class="pill o afisha">По афише</span>':'<span class="pill o closed">Сейчас закрыто</span>'};
+const openBadge=p=>{const o=openNow(p);return o===true?'<span class="pill o">Открыто</span>':o===null?'<span class="pill o afisha">По афише</span>':'<span class="pill o closed">Закрыто</span>'};
 const recheck=p=>!!S.reports[p.id];
 const stamp=p=>recheck(p)?'<span class="stamp recheck">На проверке</span>':`<span class="stamp">Проверено ${fmtShort(p.checked)}</span>`;
 const budgetLabel=p=>p.budget&&p.budget[1]===0?'Бесплатно':p.budgetText;
 const mapUrl=p=>`https://yandex.ru/maps/?pt=${p.lng},${p.lat}&z=17&l=map`;
 const placeRoute=p=>`https://yandex.ru/maps/?rtext=~${p.lat},${p.lng}`;
+const catOf=p=>CAT[p.cat]||CAT['Погулять'];
 
-/* ================= ФОТО: Wikipedia / Wikimedia Commons ================= */
-const WIKI={
-  naberezhnaya:['Михайловская набережная'],
-  zaeltsovsky:['Заельцовский парк'],
-  bugrinskaya:['Бугринская роща'],
-  narymsky:['Нарымский сквер'],
-  centralpark:['Центральный парк (Новосибирск)','Новосибирский центральный парк'],
-  novat:['Новосибирский театр оперы и балета'],
-  fakel:['Красный факел (театр)','Красный факел'],
-  zoo:['Новосибирский зоопарк'],
-  kukolny:['Новосибирский областной театр кукол'],
-  delfinia:['Дельфиния','Новосибирский дельфинарий'],
-  planetarium:['Новосибирский планетарий'],
-  aquamir:['Аквамир','Аквамир (аквапарк)'],
-  gpntb:['Государственная публичная научно-техническая библиотека СО РАН','ГПНТБ СО РАН'],
-  aura:['Аура (торговый центр)','Аура (Новосибирск)'],
-  tochka:['Академпарк','Технопарк Академгородка']
-};
-const HERO_T=['Михайловская набережная','Бугринский мост','Речной вокзал (Новосибирск)'];
-const CITY_T=['Новосибирск'];
+/* фото: Wikipedia / Wikimedia Commons */
+const WIKI={naberezhnaya:['Михайловская набережная'],zaeltsovsky:['Заельцовский парк'],bugrinskaya:['Бугринская роща'],narymsky:['Нарымский сквер'],centralpark:['Центральный парк (Новосибирск)'],novat:['Новосибирский театр оперы и балета'],fakel:['Красный факел (театр)'],zoo:['Новосибирский зоопарк'],kukolny:['Новосибирский областной театр кукол'],delfinia:['Дельфиния'],planetarium:['Новосибирский планетарий'],aquamir:['Аквамир'],gpntb:['Государственная публичная научно-техническая библиотека СО РАН'],aura:['Аура (торговый центр)'],tochka:['Академпарк']};
+const HERO_T=['Михайловская набережная','Бугринский мост'],CITY_T=['Новосибирск'];
 const Photo={pending:true,hero:{name:'Вдоль Оби',cat:'Местный маршрут'},city:{name:'Новосибирск',cat:'Город'}};
-const TINT={
-  'Погулять':['#E3F4F0','#CDEBE4'],'Поесть':['#FFF2D8','#FFE6BC'],'Вдвоём':['#FFE9E4','#FFD9D0'],
-  'С детьми':['#E9EEF7','#D8E2F2'],'Поработать':['#E9EEF7','#DCE4F1'],'Необычное':['#FFF2D8','#FFE9C9'],
-  'Полезное':['#E3F4F0','#D5EDE7'],'Активно':['#E3F4F0','#CDEBE4'],'Местный маршрут':['#FFE9E4','#FFDCCF'],'Город':['#E9EEF7','#D8E2F2']
-};
 const stripHtml=v=>String(v==null?'':v).replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
 const chunk=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o};
-const articleUrl=t=>'https://ru.wikipedia.org/wiki/'+encodeURIComponent(t.replace(/ /g,'_'));
-
 async function api(params){
-  const ctl=new AbortController();const timer=setTimeout(()=>ctl.abort(),9000);
-  try{
-    const u='https://ru.wikipedia.org/w/api.php?'+new URLSearchParams({format:'json',formatversion:'2',origin:'*',...params});
-    const r=await fetch(u,{signal:ctl.signal});
-    if(!r.ok)throw new Error('http '+r.status);
-    return await r.json();
-  }finally{clearTimeout(timer)}
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
+  try{const r=await fetch('https://ru.wikipedia.org/w/api.php?'+new URLSearchParams({format:'json',formatversion:'2',origin:'*',...params}),{signal:ctl.signal});if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(t)}
 }
 async function resolvePhotos(){
-  const titles=[...new Set([...Object.values(WIKI).flat(),...HERO_T,...CITY_T])];
-  const found={};
+  const titles=[...new Set([...Object.values(WIKI).flat(),...HERO_T,...CITY_T])],found={};
   for(const part of chunk(titles,8)){
     const j=await api({action:'query',redirects:'1',prop:'pageimages',piprop:'thumbnail|name',pithumbsize:'900',titles:part.join('|')});
     const q=j.query||{},alias={};
-    (q.normalized||[]).forEach(n=>alias[n.from]=n.to);
-    (q.redirects||[]).forEach(n=>alias[n.from]=n.to);
+    (q.normalized||[]).forEach(n=>alias[n.from]=n.to);(q.redirects||[]).forEach(n=>alias[n.from]=n.to);
     const follow=t=>{let x=t,i=0;while(alias[x]&&i++<6)x=alias[x];return x};
-    const byTitle={};
-    (q.pages||[]).forEach(p=>{if(p&&p.thumbnail&&p.thumbnail.source)byTitle[p.title]={src:p.thumbnail.source,file:p.pageimage||''}});
-    part.forEach(t=>{const hit=byTitle[follow(t)];if(hit)found[t]=hit});
+    const by={};(q.pages||[]).forEach(p=>{if(p&&p.thumbnail)by[p.title]={src:p.thumbnail.source,file:p.pageimage||''}});
+    part.forEach(t=>{const h=by[follow(t)];if(h)found[t]=h});
   }
-  const files=[...new Set(Object.values(found).map(v=>v.file).filter(Boolean))];
-  const meta={};
+  const files=[...new Set(Object.values(found).map(v=>v.file).filter(Boolean))],meta={};
   for(const part of chunk(files,8)){
     try{
       const j=await api({action:'query',prop:'imageinfo',iiprop:'url|extmetadata',titles:part.map(f=>'File:'+f).join('|')});
-      ((j.query||{}).pages||[]).forEach(p=>{
-        const ii=(p.imageinfo||[])[0];if(!ii)return;
-        const em=ii.extmetadata||{};
-        meta[p.title.replace(/^File:/,'')]={
-          author:stripHtml(em.Artist&&em.Artist.value)||'автор не указан',
-          license:stripHtml(em.LicenseShortName&&em.LicenseShortName.value)||'свободная лицензия',
-          page:ii.descriptionurl||('https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(p.title.replace(/^File:/,'')))
-        };
-      });
+      ((j.query||{}).pages||[]).forEach(p=>{const ii=(p.imageinfo||[])[0];if(!ii)return;const em=ii.extmetadata||{};
+        meta[p.title.replace(/^File:/,'')]={author:stripHtml(em.Artist&&em.Artist.value)||'автор не указан',license:stripHtml(em.LicenseShortName&&em.LicenseShortName.value)||'свободная лицензия',page:ii.descriptionurl||'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(p.title.replace(/^File:/,''))}});
     }catch(e){}
   }
-  const pick=list=>{for(const t of list){if(found[t])return{photo:found[t].src,credit:{...(meta[found[t].file]||{author:'автор не указан',license:'свободная лицензия',page:'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(found[t].file)}),title:t,article:articleUrl(t)}}}return null};
-  const out={places:{},hero:null,city:null};
-  PLACES.forEach(p=>{const hit=pick(WIKI[p.id]||[]);if(hit)out.places[p.id]=hit});
-  out.hero=pick(HERO_T);out.city=pick(CITY_T);
+  const pick=list=>{for(const t of list){if(found[t]){const f=found[t];return{photo:f.src,credit:{...(meta[f.file]||{author:'автор не указан',license:'свободная лицензия',page:'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(f.file)}),article:'https://ru.wikipedia.org/wiki/'+encodeURIComponent(t.replace(/ /g,'_'))}}}}return null};
+  const out={places:{},hero:pick(HERO_T),city:pick(CITY_T)};
+  PLACES.forEach(p=>{const h=pick(WIKI[p.id]||[]);if(h)out.places[p.id]=h});
   return out;
 }
-function applyPhotos(data){
-  if(!data)return;
-  PLACES.forEach(p=>{const h=data.places&&data.places[p.id];if(h){p.photo=h.photo;p.credit=h.credit}else{delete p.photo;delete p.credit}});
-  if(data.hero){Photo.hero.photo=data.hero.photo;Photo.hero.credit=data.hero.credit}
-  if(data.city){Photo.city.photo=data.city.photo;Photo.city.credit=data.city.credit}
+function applyPhotos(d){
+  if(!d)return;
+  PLACES.forEach(p=>{const h=d.places&&d.places[p.id];if(h){p.photo=h.photo;p.credit=h.credit}else{delete p.photo;delete p.credit}});
+  if(d.hero){Photo.hero.photo=d.hero.photo;Photo.hero.credit=d.hero.credit}
+  if(d.city){Photo.city.photo=d.city.photo;Photo.city.credit=d.city.credit}
 }
 function coverInner(p,eager){
-  const t=TINT[p.cat]||['#E3F4F0','#CDEBE4'];
-  const typo=`<span class="typo" style="--t1:${t[0]};--t2:${t[1]}"><span class="tk">${p.cat||''}</span><span class="tn">${p.name}</span><span class="tr"></span></span>`;
-  const img=p.photo?`<img class="ph" src="${p.photo}" alt="" ${eager?'':'loading="lazy"'} decoding="async" onerror="this.remove()">`:'';
-  const skel=(!p.photo&&Photo.pending)?'<span class="skel"></span>':'';
-  return typo+img+skel+'<span class="scrim"></span>';
+  const c=catOf(p);
+  const typo=`<span class="typo" style="--t1:${c.t};--t2:${c.t}"><span class="tk">${p.cat||''}</span><span class="tn">${p.name}</span><span class="tr" style="background:${c.c}"></span></span>`;
+  return typo+(p.photo?`<img class="ph" src="${p.photo}" alt="" ${eager?'':'loading="lazy"'} decoding="async" onerror="this.remove()">`:'')+((!p.photo&&Photo.pending)?'<span class="skel"></span>':'')+'<span class="scrim"></span>';
 }
 
-/* ================= фильтрация ================= */
+/* фильтры */
 function filtered(){
   let list=PLACES.filter(p=>{
-    if(S.q){const hay=(p.name+' '+p.desc+' '+p.minus+' '+p.addr+' '+p.area+' '+p.cat+' '+p.feat.join(' ')).toLowerCase();if(!hay.includes(S.q.toLowerCase().trim()))return false}
+    if(S.q){const hay=(p.name+' '+p.lead+' '+p.desc+' '+p.minus+' '+p.addr+' '+p.area+' '+p.cat+' '+p.feat.join(' ')).toLowerCase();if(!hay.includes(S.q.toLowerCase().trim()))return false}
     if(S.tag!=='all'&&!p.tags.includes(S.tag))return false;
     if(S.company!=='any'&&!p.company.includes(S.company))return false;
     if(S.mood!=='any'&&!p.mood.includes(S.mood))return false;
@@ -144,47 +96,50 @@ function filtered(){
   return list;
 }
 function activeSummary(){
-  const bits=[];
-  if(S.company!=='any')bits.push(COMPANY[S.company]);
-  if(S.mood!=='any')bits.push(MOOD[S.mood]);
-  if(S.budget!=='any')bits.push(S.budget==='free'?'Бесплатно':'До '+S.budget+' ₽');
-  if(S.weather!=='any')bits.push(S.weather==='in'?'В помещении':'На улице');
-  if(S.open)bits.push('Открыто сейчас');
-  if(S.tag!=='all')bits.push((CHIPS.find(c=>c.k===S.tag)||{}).n||'');
-  if(S.q)bits.push('«'+S.q+'»');
-  return bits.filter(Boolean).join(' · ');
+  const b=[];
+  if(S.company!=='any')b.push(COMPANY[S.company]);
+  if(S.mood!=='any')b.push(MOOD[S.mood]);
+  if(S.budget!=='any')b.push(S.budget==='free'?'Бесплатно':'До '+S.budget+' ₽');
+  if(S.weather!=='any')b.push(S.weather==='in'?'Под крышей':'На улице');
+  if(S.open)b.push('Открыто сейчас');
+  if(S.tag!=='all')b.push((CHIPS.find(c=>c.k===S.tag)||{}).n||'');
+  if(S.q)b.push('«'+S.q+'»');
+  return b.filter(Boolean).join(' · ');
 }
 
-/* ================= отрисовка ================= */
-function cardHtml(p){
-  const saved=S.saved.has(p.id);
-  return `<article class="card rv" data-id="${p.id}" tabindex="0" role="button" aria-label="Подробнее: ${p.name}">
-    <div class="cover">${coverInner(p)}<span class="cat">${p.cat}</span></div>
-    <div class="card-b">
-      <div class="area">${p.area} район</div>
-      <h3>${p.name}</h3>
-      <p class="desc">${p.desc}</p>
-      <div class="minus"><b>Но:</b> ${p.minus}</div>
-      <div class="pills"><span class="pill b">${budgetLabel(p)}</span><span class="pill t">${p.best}</span>${openBadge(p)}</div>
-      <div class="feat">${p.feat.join(' · ')}</div>
-      <div class="card-f">${stamp(p)}<span class="sp"></span>
-        <button class="ibtn ${saved?'saved':''}" data-save="${p.id}" type="button" aria-label="Сохранить ${p.name}" aria-pressed="${saved}"><svg viewBox="0 0 20 20"><path d="M10 17s-7-4.5-7-9a4 4 0 0 1 7-2.5A4 4 0 0 1 17 8c0 4.5-7 9-7 9z"/></svg></button>
-        <a class="ibtn" href="${mapUrl(p)}" target="_blank" rel="noopener" data-stop aria-label="Открыть на карте: ${p.name}"><svg viewBox="0 0 20 20"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10z"/><circle cx="10" cy="8" r="2"/></svg></a>
-        <a class="btn btn-coral btn-sm" href="${placeRoute(p)}" target="_blank" rel="noopener" data-stop>Маршрут</a>
-      </div>
-    </div>
-  </article>`;
+/* журнал-сетка */
+function heart(p){const on=S.saved.has(p.id);return `<button class="ibtn ${on?'saved':''}" data-save="${p.id}" type="button" aria-label="Сохранить ${p.name}" aria-pressed="${on}"><svg viewBox="0 0 20 20"><path d="M10 17s-7-4.5-7-9a4 4 0 0 1 7-2.5A4 4 0 0 1 17 8c0 4.5-7 9-7 9z"/></svg></button>`}
+function foot(p,route){return `<div class="foot">${stamp(p)}<span class="sp"></span>${heart(p)}<button class="ibtn" data-map="${p.id}" type="button" aria-label="Показать на карте"><svg viewBox="0 0 20 20"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10z"/><circle cx="10" cy="8" r="2"/></svg></button>${route?`<a class="btn btn-red btn-sm" href="${placeRoute(p)}" target="_blank" rel="noopener" data-stop>Маршрут</a>`:''}</div>`}
+function cardHtml(p,i){
+  const shape=i===0&&p.shape!=='note'?'feature':(p.shape||'std');
+  const c=catOf(p),open=`<article class="card c-${shape} rv" data-id="${p.id}" tabindex="0" role="button" aria-label="Подробнее: ${p.name}">`;
+  if(shape==='note')return `${open}<div class="body" style="--nt:${c.t};--nc:${c.c==='#111A38'?'#111A38':c.c}">
+    <div class="num">${String(i+1).padStart(2,'0')}</div><div class="rule"></div>
+    <div class="area">${p.cat} · ${p.area}</div><h3>${p.name}</h3><p class="lead">${p.lead}</p>
+    <div class="pills"><span class="pill b">${budgetLabel(p)}</span>${openBadge(p)}</div>${foot(p,false)}</div></article>`;
+  if(shape==='tall')return `${open}<div class="cover">${coverInner(p)}<span class="cat-tag">${p.cat}</span>
+    <div class="on-img"><span class="k">${p.area} район</span><h3>${p.name}</h3></div></div>
+    <div class="body"><p class="lead">${p.lead}</p><div class="minus"><b>Минус</b> ${p.minus}</div>
+    <div class="pills"><span class="pill b">${budgetLabel(p)}</span><span class="pill t">${p.best}</span>${openBadge(p)}</div>${foot(p,false)}</div></article>`;
+  if(shape==='mini')return `${open}<div class="cover">${coverInner(p)}</div>
+    <div class="body"><div class="area">${p.cat}</div><h3>${p.name}</h3><p class="lead">${p.lead}</p>
+    <div class="pills"><span class="pill b">${budgetLabel(p)}</span>${openBadge(p)}</div>${foot(p,false)}</div></article>`;
+  const big=shape==='feature';
+  return `${open}<div class="cover">${coverInner(p,big)}<span class="cat-tag">${p.cat}</span></div>
+    <div class="body"><div class="area">${p.area} район</div><h3>${p.name}</h3><p class="lead">${big?p.desc:p.lead}</p>
+    ${shape!=='std'?`<div class="minus"><b>Минус</b> ${p.minus}</div>`:''}
+    <div class="pills"><span class="pill b">${budgetLabel(p)}</span><span class="pill t">${p.best}</span>${openBadge(p)}</div>
+    ${big?`<div class="area">${p.feat.join(' · ')}</div>`:''}${foot(p,big||shape==='wide')}</div></article>`;
 }
 function render(){
   const list=filtered();
-  $('#countLine').textContent='Найдено: '+list.length+' '+placesWord(list.length);
+  $('#countLine').textContent=list.length+' '+pw(list.length);
   $('#activeHint').textContent=activeSummary();
-  $('#grid').innerHTML=list.length?list.map(cardHtml).join(''):
-    `<div class="empty"><b>Ничего не нашлось</b>Попробуй убрать фильтры или поискать по-другому.<br><br><button class="btn btn-line" id="emptyReset" type="button">Сбросить фильтры</button></div>`;
+  $('#grid').innerHTML=list.length?list.map(cardHtml).join(''):`<div class="empty"><b>Пусто</b>Под эти условия ничего нет.<br><br><button class="btn btn-line" id="emptyReset" type="button">Сбросить фильтры</button></div>`;
   const er=$('#emptyReset');if(er)er.addEventListener('click',()=>{resetAll();toast('Фильтры сброшены')});
   const bn=$('#banner');
-  if(S.col){const c=COLS.find(x=>x.k===S.col);bn.classList.add('show');$('#bannerName').textContent=c.n;$('#bannerMeta').textContent='собрал Антон · обновлено 19 ноября · '+list.length+' '+placesWord(list.length)}
-  else if(S.savedOnly){bn.classList.add('show');$('#bannerName').textContent='Сохранённое';$('#bannerMeta').textContent=list.length+' '+placesWord(list.length)}
+  if(S.col){const c=COLS.find(x=>x.k===S.col);bn.classList.add('show');$('#bannerName').textContent=c.n;$('#bannerMeta').textContent='Антон Маслаков · 19 ноября · '+list.length+' '+pw(list.length)}
+  else if(S.savedOnly){bn.classList.add('show');$('#bannerName').textContent='Сохранённое';$('#bannerMeta').textContent=list.length+' '+pw(list.length)}
   else bn.classList.remove('show');
   $$('.seg').forEach(g=>{const k=g.dataset.group;$$('button',g).forEach(b=>b.classList.toggle('on',b.dataset.val===String(S[k])))});
   $('#openTgl').classList.toggle('on',S.open);$('#openTgl').setAttribute('aria-pressed',String(S.open));
@@ -193,25 +148,19 @@ function render(){
   $$('#chips .chip').forEach(b=>{const k=b.dataset.chip;
     const on=(k==='open'&&S.open)||(k==='warm'&&S.weather==='in')||(k==='free'&&S.budget==='free')||(k==='kids'&&S.company==='kids')||(k==='two'&&S.company==='two')||(['eat','walk','work'].includes(k)&&S.tag===k);
     b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
-  observeRv();
+  syncMap(list);observeRv();
 }
-function renderChips(){
-  $('#chips').innerHTML=CHIPS.map(c=>`<button class="chip" data-chip="${c.k}" type="button" aria-pressed="false"><svg viewBox="0 0 20 20">${c.ic}</svg>${c.n}</button>`).join('');
-}
+function renderChips(){$('#chips').innerHTML=CHIPS.map(c=>`<button class="chip" data-chip="${c.k}" type="button" aria-pressed="false"><svg viewBox="0 0 20 20">${c.ic}</svg>${c.n}</button>`).join('')}
 function renderCols(){
-  const f=COLS[0],cnt=PLACES.filter(colPred.today).length;
-  $('#colFeatured').innerHTML=`<button class="col-feat rv" data-col="today" type="button">
-    <div class="txt"><div class="k">Подборка дня</div><h3>${f.n}</h3><p>${f.d}</p>
-    <div class="meta"><span>Собрал Антон</span><span>Обновлено 19 ноября 2026</span></div>
-    <span class="cnt">${cnt} ${placesWord(cnt)} на сегодняшний вечер →</span></div>
+  const f=COLS[0],n=PLACES.filter(colPred.today).length;
+  $('#colFeatured').innerHTML=`<button class="col-feat rv" data-col="today" type="button"><div class="txt"><div class="k">Подборка выпуска</div><h3>${f.n}</h3><p>${f.d}</p>
+    <div class="meta"><span>Антон Маслаков</span><span>19 ноября 2026</span></div><span class="cnt">${n} ${pw(n)} →</span></div>
     <div class="art">${coverInner(Photo.hero)}</div></button>`;
-  const tints={duo:'var(--blush)',kidsrain:'var(--sky)',work:'var(--sky)',free:'var(--mint)',cheap:'var(--sun-soft)',unusual:'var(--sun-soft)',late:'var(--mint)'};
-  const icons={duo:CHIPS[4].ic,kidsrain:CHIPS[3].ic,work:CHIPS[5].ic,free:CHIPS[6].ic,cheap:CHIPS[6].ic,unusual:CHIPS[1].ic,late:CHIPS[7].ic};
+  const tint={duo:'var(--magenta-t)',kidsrain:'var(--blue-t)',work:'var(--violet-t)',free:'var(--teal-t)',cheap:'var(--amber-t)',unusual:'var(--lime-t)',late:'var(--red-t)'};
+  const ic={duo:CHIPS[4].ic,kidsrain:CHIPS[3].ic,work:CHIPS[5].ic,free:CHIPS[6].ic,cheap:CHIPS[6].ic,unusual:CHIPS[1].ic,late:CHIPS[7].ic};
   $('#colGrid').innerHTML=COLS.slice(1).map(c=>{const n=PLACES.filter(colPred[c.k]).length;
-    return `<button class="col rv" data-col="${c.k}" type="button">
-      <span class="ic" style="background:${tints[c.k]}"><svg viewBox="0 0 20 20">${icons[c.k]}</svg></span>
-      <h3>${c.n}</h3><p>${c.d}</p>
-      <div class="meta"><span>Антон · 19.11</span><b>${n} ${placesWord(n)}</b></div></button>`}).join('');
+    return `<button class="col rv" data-col="${c.k}" type="button"><span class="ic" style="background:${tint[c.k]}"><svg viewBox="0 0 20 20">${ic[c.k]}</svg></span>
+      <h3>${c.n}</h3><p>${c.d}</p><div class="meta"><span>19.11</span><b>${n} ${pw(n)}</b></div></button>`}).join('');
 }
 function paintArt(){
   $('#routeArt').innerHTML=coverInner(Photo.hero,true);
@@ -220,67 +169,84 @@ function paintArt(){
 }
 function renderSources(){
   const shot=PLACES.filter(p=>p.photo).length;
-  $('#srcLead').textContent='Фотографии — из Wikipedia и Wikimedia Commons, свободные лицензии. Ниже автор и лицензия каждого снимка. Найдено '+shot+' из '+PLACES.length+' мест; остальные снимем сами после визита.';
-  $('#srcList').innerHTML=PLACES.map((p,i)=>{
-    if(p.photo&&p.credit){
-      const c=p.credit;
-      return `<li><img class="th" src="${p.photo}" alt="" loading="lazy" onerror="this.remove()"><div><b>${p.name}</b><span>${c.author} · ${c.license}</span><a href="${c.page}" target="_blank" rel="noopener">Источник снимка</a> · <a href="${c.article}" target="_blank" rel="noopener">статья</a></div></li>`;
-    }
-    return `<li><span class="n">${i+1}</span><div><b>${p.name}</b><span>Фото ещё нет — снимем и поставим после визита</span></div></li>`;
-  }).join('')+(()=>{const h=Photo.hero;return h.photo&&h.credit?`<li><img class="th" src="${h.photo}" alt="" loading="lazy" onerror="this.remove()"><div><b>Маршрут «Вдоль Оби»</b><span>${h.credit.author} · ${h.credit.license}</span><a href="${h.credit.page}" target="_blank" rel="noopener">Источник снимка</a></div></li>`:''})();
+  $('#srcLead').textContent='Снимки из Wikipedia и Wikimedia Commons, свободные лицензии. Найдено '+shot+' из '+PLACES.length+' мест. Остальные снимем сами.';
+  $('#srcList').innerHTML=PLACES.map((p,i)=>p.photo&&p.credit?
+    `<li><img class="th" src="${p.photo}" alt="" loading="lazy" onerror="this.remove()"><div><b>${p.name}</b><span>${p.credit.author} · ${p.credit.license}</span><a href="${p.credit.page}" target="_blank" rel="noopener">Источник</a></div></li>`:
+    `<li><span class="n">${i+1}</span><div><b>${p.name}</b><span>Фото ещё нет</span></div></li>`).join('');
 }
 function saveState(){store.set('m4.saved',[...S.saved]);store.set('m4.reports',S.reports);$('#savedCount').textContent=S.saved.size}
 
-/* ================= тост ================= */
+/* карта */
+const M={map:null,layer:null,markers:{},me:null,ready:false};
+function initMap(){
+  const box=$('#cityMap');if(!box)return;
+  if(typeof L==='undefined'){
+    box.innerHTML=`<div class="map-fallback"><b>Карта не загрузилась</b><p style="font-size:14px;color:#3D4A70">Нет связи с сервером карт. Все места открываются по ссылкам ниже.</p><ul>${PLACES.map(p=>`<li><a href="${mapUrl(p)}" target="_blank" rel="noopener">${p.name} — на Яндекс Картах</a></li>`).join('')}</ul></div>`;
+    $('#mapList').innerHTML='<div class="map-empty">Список мест доступен в разделе «Места».</div>';
+    return;
+  }
+  M.map=L.map(box,{scrollWheelZoom:false,zoomControl:true,attributionControl:true}).setView([55.028,82.92],12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap, © CARTO'}).addTo(M.map);
+  M.layer=L.layerGroup().addTo(M.map);M.ready=true;
+  syncMap(filtered());fitMap();
+}
+function syncMap(list){
+  if(!M.ready)return;
+  M.layer.clearLayers();M.markers={};
+  list.forEach((p,i)=>{
+    const c=catOf(p);
+    const icon=L.divIcon({className:'pin'+(c.dark?' dark':''),html:`<span style="--c:${c.c}"><i>${i+1}</i></span>`,iconSize:[28,28],iconAnchor:[14,26]});
+    const m=L.marker([p.lat,p.lng],{icon,title:p.name,riseOnHover:true}).addTo(M.layer);
+    m.on('click',()=>openPlace(p.id));M.markers[p.id]=m;
+  });
+  $('#mapCount').textContent=list.length+' '+pw(list.length)+' на карте';
+  $('#mapList').innerHTML=list.length?list.map((p,i)=>{const c=catOf(p);
+    return `<button class="mrow" data-fly="${p.id}" type="button"><span class="dot${c.dark?' dark':''}" style="background:${c.c}">${i+1}</span><span><b>${p.name}</b><span>${p.cat} · ${budgetLabel(p)}</span></span></button>`}).join(''):'<div class="map-empty">Под эти условия мест нет.</div>';
+}
+function fitMap(){
+  if(!M.ready)return;
+  const ms=Object.values(M.markers);if(!ms.length)return;
+  M.map.fitBounds(L.featureGroup(ms).getBounds().pad(.18),{animate:!reduced});
+}
+function flyToPlace(id){
+  const p=PLACES.find(x=>x.id===id);if(!p)return;
+  $('#map-sec').scrollIntoView({behavior:reduced?'auto':'smooth'});
+  if(!M.ready)return;
+  setTimeout(()=>{
+    M.map.flyTo([p.lat,p.lng],16,{duration:reduced?0:.8});
+    const el=M.markers[id]&&M.markers[id].getElement();
+    if(el){el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),1900)}
+  },reduced?0:420);
+}
+
+/* тост, сохранённое, окна */
 function toast(msg,label,fn){
-  const el=$('#toast'),b=$('#toastAct');
-  clearTimeout(toastTimer);clearTimeout(toastHide);
+  const el=$('#toast'),b=$('#toastAct');clearTimeout(toastTimer);clearTimeout(toastHide);
   $('#toastText').textContent=msg;
   if(label){b.hidden=false;b.textContent=label;b.onclick=()=>{fn();hideToast()}}else{b.hidden=true;b.onclick=null}
   if(typeof el.showPopover==='function'){try{el.showPopover()}catch(e){}}
-  el.classList.add('show');
-  toastTimer=setTimeout(hideToast,3600);
+  el.classList.add('show');toastTimer=setTimeout(hideToast,3600);
 }
-function hideToast(){
-  const el=$('#toast');el.classList.remove('show');
-  clearTimeout(toastHide);
-  toastHide=setTimeout(()=>{if(!el.classList.contains('show')&&typeof el.hidePopover==='function'){try{el.hidePopover()}catch(e){}}},280);
-}
-
-/* ================= сохранённое ================= */
+function hideToast(){const el=$('#toast');el.classList.remove('show');clearTimeout(toastHide);toastHide=setTimeout(()=>{if(!el.classList.contains('show')&&typeof el.hidePopover==='function'){try{el.hidePopover()}catch(e){}}},280)}
 function toggleSave(id){
-  if(S.saved.has(id)){S.saved.delete(id);lastRemoved=id;saveState();render();toast('Убрано из сохранённых','Вернуть',()=>{S.saved.add(lastRemoved);saveState();render()})}
-  else{S.saved.add(id);saveState();render();toast('Сохранено. Найдёшь в «Сохранённом» сверху')}
+  if(S.saved.has(id)){S.saved.delete(id);lastRemoved=id;saveState();render();toast('Убрано','Вернуть',()=>{S.saved.add(lastRemoved);saveState();render()})}
+  else{S.saved.add(id);saveState();render();toast('Сохранено')}
   if(currentId===id&&$('#placeDlg').open)pdSave();
 }
-function pdSave(){
-  const on=S.saved.has(currentId);
-  $('#pdSave').textContent=on?'♥ Сохранено':'Сохранить';
-  $('#pdSave').setAttribute('aria-pressed',String(on));
-}
-
-/* ================= окна ================= */
+function pdSave(){const on=S.saved.has(currentId);$('#pdSave').textContent=on?'♥ Сохранено':'Сохранить';$('#pdSave').setAttribute('aria-pressed',String(on))}
 function showDialog(d){if(!d.open)d.showModal();document.body.classList.add('lock')}
 function openPlace(id){
   const p=PLACES.find(x=>x.id===id);if(!p)return;currentId=id;
   $('#pdCover').innerHTML='<button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button>'+coverInner(p,true);
   $('#pdCat').textContent=p.cat+' · '+p.area+' район';
-  $('#pdName').textContent=p.name;
-  $('#pdAddr').textContent=p.addr;
-  $('#pdDesc').textContent=p.desc;
-  $('#pdMinus').innerHTML='<b>Но:</b> '+p.minus;
-  $('#pdTags').innerHTML=[...p.company.map(c=>`<span class="pill b">${COMPANY[c]||c}</span>`),...p.mood.map(m=>`<span class="pill t">${MOOD[m]}</span>`),`<span class="pill ${p.indoor?'o afisha':'o'}">${p.indoor?'В помещении':'На улице'}</span>`,openBadge(p)].join('');
-  $('#pdBudget').textContent=p.budgetText;
-  $('#pdBest').textContent=p.best;
-  $('#pdHours').textContent=p.hoursText;
-  $('#pdFeat').textContent=p.feat.join(', ');
+  $('#pdName').textContent=p.name;$('#pdAddr').textContent=p.addr;$('#pdDesc').textContent=p.desc;
+  $('#pdMinus').innerHTML='<b>Минус</b> '+p.minus;
+  $('#pdTags').innerHTML=[...p.company.map(c=>`<span class="pill b">${COMPANY[c]||c}</span>`),...p.mood.map(m=>`<span class="pill t">${MOOD[m]}</span>`),`<span class="pill ${p.indoor?'o afisha':'o'}">${p.indoor?'Под крышей':'На улице'}</span>`,openBadge(p)].join('');
+  $('#pdBudget').textContent=p.budgetText;$('#pdBest').textContent=p.best;$('#pdHours').textContent=p.hoursText;$('#pdFeat').textContent=p.feat.join(', ');
   const st=$('#pdStamp');
   if(recheck(p)){st.className='stamp recheck';st.textContent='На проверке'}else{st.className='stamp';st.textContent='Проверено '+fmtDate(p.checked)}
   $('#pdSrc').innerHTML=p.src+(p.credit?` · <a href="${p.credit.page}" target="_blank" rel="noopener">фото: ${p.credit.license}</a>`:'');
-  $('#pdRoute').href=placeRoute(p);
-  $('#pdMap').href=mapUrl(p);
-  pdSave();
-  showDialog($('#placeDlg'));
+  $('#pdRoute').href=placeRoute(p);$('#pdMap').href=mapUrl(p);pdSave();showDialog($('#placeDlg'));
 }
 function openReport(id){
   $('#rpPlace').innerHTML=PLACES.map(p=>`<option value="${p.id}" ${p.id===id?'selected':''}>${p.name}</option>`).join('');
@@ -288,17 +254,11 @@ function openReport(id){
   if($('#placeDlg').open)$('#placeDlg').close();
   showDialog($('#reportDlg'));
 }
-function resetAll(){
-  Object.assign(S,{q:'',tag:'all',company:'any',mood:'any',budget:'any',weather:'any',open:false,savedOnly:false,sort:'rec',col:null});
-  $('#q').value='';render();
-}
-function applyCol(k){
-  resetAll();S.col=k;Object.assign(S,colApply[k]||{});
-  render();$('#places').scrollIntoView({behavior:reduced?'auto':'smooth'});
-}
+function resetAll(){Object.assign(S,{q:'',tag:'all',company:'any',mood:'any',budget:'any',weather:'any',open:false,savedOnly:false,sort:'rec',col:null});$('#q').value='';render()}
 const goPlaces=()=>$('#places').scrollIntoView({behavior:reduced?'auto':'smooth'});
+function applyCol(k){resetAll();S.col=k;Object.assign(S,colApply[k]||{});render();goPlaces();setTimeout(fitMap,300)}
 
-/* ================= события ================= */
+/* события */
 $('#searchForm').addEventListener('submit',e=>{e.preventDefault();S.q=$('#q').value;S.col=null;render();goPlaces()});
 $('#q').addEventListener('input',e=>{S.q=e.target.value;S.col=null;render()});
 $('#chips').addEventListener('click',e=>{
@@ -311,106 +271,84 @@ $('#chips').addEventListener('click',e=>{
   else S.tag=S.tag===k?'all':k;
   render();goPlaces();
 });
-$$('.seg').forEach(g=>g.addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b)return;
-  S[g.dataset.group]=b.dataset.val;S.col=null;render();
-}));
+$$('.seg').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[g.dataset.group]=b.dataset.val;S.col=null;render()}));
 $('#openTgl').addEventListener('click',()=>{S.open=!S.open;S.col=null;render()});
 $('#sortSel').addEventListener('change',e=>{S.sort=e.target.value;render()});
-$('#resetBtn').addEventListener('click',()=>{resetAll();toast('Фильтры сброшены')});
+$('#resetBtn').addEventListener('click',()=>{resetAll();toast('Фильтры сброшены');fitMap()});
 $('#bannerClear').addEventListener('click',()=>{S.col=null;S.savedOnly=false;render()});
-$('#savedBtn').addEventListener('click',()=>{
-  S.savedOnly=!S.savedOnly;S.col=null;render();goPlaces();
-  if(S.savedOnly&&!S.saved.size)toast('Пока пусто — жми ♥ на карточке места');
-});
-$('#randomBtn').addEventListener('click',()=>{
-  const list=filtered();
-  if(!list.length){toast('Под эти условия ничего нет — сбрось фильтры');return}
-  const p=list[Math.floor(Math.random()*list.length)];
-  openPlace(p.id);toast('Случайное место: '+p.name);
+$('#savedBtn').addEventListener('click',()=>{S.savedOnly=!S.savedOnly;S.col=null;render();goPlaces();if(S.savedOnly&&!S.saved.size)toast('Пока пусто — жми ♥ на карточке')});
+$('#randomBtn').addEventListener('click',()=>{const l=filtered();if(!l.length){toast('Под эти условия ничего нет');return}const p=l[Math.floor(Math.random()*l.length)];openPlace(p.id);toast('Случайное: '+p.name)});
+$('#mapFit').addEventListener('click',()=>{fitMap();toast('Показаны все метки')});
+$('#mapGeo').addEventListener('click',()=>{
+  if(!navigator.geolocation){toast('Браузер не отдаёт геолокацию');return}
+  toast('Ищем тебя…');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const ll=[pos.coords.latitude,pos.coords.longitude];
+    if(!M.ready){toast('Карта недоступна');return}
+    if(M.me)M.map.removeLayer(M.me);
+    M.me=L.marker(ll,{icon:L.divIcon({className:'',html:'<div class="me-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(M.map);
+    M.map.flyTo(ll,14,{duration:reduced?0:.9});toast('Ты здесь');
+  },()=>toast('Не удалось определить место'),{timeout:9000,maximumAge:60000});
 });
 document.addEventListener('click',e=>{
   const col=e.target.closest('[data-col]');if(col){applyCol(col.dataset.col);return}
   const sv=e.target.closest('[data-save]');if(sv){e.stopPropagation();toggleSave(sv.dataset.save);return}
+  const mp=e.target.closest('[data-map]');if(mp){e.stopPropagation();flyToPlace(mp.dataset.map);return}
+  const fl=e.target.closest('[data-fly]');if(fl){flyToPlace(fl.dataset.fly);return}
   if(e.target.closest('[data-stop]'))return;
   const card=e.target.closest('.card');if(card){openPlace(card.dataset.id);return}
   const cl=e.target.closest('[data-close]');if(cl){const d=cl.closest('dialog');if(d)d.close()}
 });
-document.addEventListener('keydown',e=>{
-  const t=e.target;
-  if(t&&t.classList&&t.classList.contains('card')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openPlace(t.dataset.id)}
-});
+document.addEventListener('keydown',e=>{const t=e.target;if(t&&t.classList&&t.classList.contains('card')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openPlace(t.dataset.id)}});
 $('#pdSave').addEventListener('click',()=>toggleSave(currentId));
 $('#pdReport').addEventListener('click',()=>openReport(currentId));
+$('#pdOnMap').addEventListener('click',()=>{$('#placeDlg').close();flyToPlace(currentId)});
 $('#footReport').addEventListener('click',()=>openReport(PLACES[0].id));
 $('#footSources').addEventListener('click',()=>{renderSources();showDialog($('#sourcesDlg'))});
 $('#suggestOpen').addEventListener('click',()=>{$('#suggestForm').style.display='block';$('#suggestOk').classList.remove('show');showDialog($('#suggestDlg'))});
 $('#routeOpen').addEventListener('click',()=>showDialog($('#routeDlg')));
 $('#suggestForm').addEventListener('submit',e=>{
-  e.preventDefault();
-  const arr=store.get('m4.suggests',[]);
-  arr.push({...Object.fromEntries(new FormData(e.target).entries()),at:new Date().toISOString()});
-  store.set('m4.suggests',arr);
-  e.target.style.display='none';$('#suggestOk').classList.add('show');
-  toast('Спасибо! Заявка принята');
+  e.preventDefault();const a=store.get('m4.suggests',[]);
+  a.push({...Object.fromEntries(new FormData(e.target).entries()),at:new Date().toISOString()});store.set('m4.suggests',a);
+  e.target.style.display='none';$('#suggestOk').classList.add('show');toast('Заявка принята');
 });
 $('#suggestAgain').addEventListener('click',()=>{$('#suggestOk').classList.remove('show');const f=$('#suggestForm');f.reset();f.style.display='block'});
 $('#reportForm').addEventListener('submit',e=>{
-  e.preventDefault();
-  const id=$('#rpPlace').value,arr=store.get('m4.reportList',[]);
-  arr.push({id,type:$('#rpType').value,text:$('#rpText').value,at:new Date().toISOString()});
-  store.set('m4.reportList',arr);
-  S.reports[id]=true;saveState();
-  $('#reportDlg').close();render();
-  toast('Спасибо! Место отмечено «На проверке»');
+  e.preventDefault();const id=$('#rpPlace').value,a=store.get('m4.reportList',[]);
+  a.push({id,type:$('#rpType').value,text:$('#rpText').value,at:new Date().toISOString()});store.set('m4.reportList',a);
+  S.reports[id]=true;saveState();$('#reportDlg').close();render();toast('Спасибо. Место на проверке');
 });
 $$('dialog').forEach(d=>{
   d.addEventListener('click',e=>{if(e.target===d)d.close()});
   d.addEventListener('close',()=>{if(!$$('dialog').some(x=>x.open))document.body.classList.remove('lock')});
 });
 
-/* ================= движение и живой статус ================= */
+/* движение */
 let io;
 function observeRv(){
   if(!('IntersectionObserver'in window)){$$('.rv').forEach(el=>el.classList.add('in'));return}
-  if(!io)io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.06});
+  if(!io)io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.05});
   $$('.rv:not(.in)').forEach(el=>io.observe(el));
 }
-const hd=$('#hd');
-let ticking=false;
-addEventListener('scroll',()=>{
-  if(ticking)return;ticking=true;
-  requestAnimationFrame(()=>{
-    hd.classList.toggle('scrolled',scrollY>10);
-    if(!reduced&&scrollY<900){
-      $('#heroSun').style.translate='0 '+(scrollY*.16)+'px';
-      $('#heroRiver').style.translate='0 '+(scrollY*.06)+'px';
-    }
-    ticking=false;
-  });
-},{passive:true});
+const hd=$('#hd');let ticking=false;
+addEventListener('scroll',()=>{if(ticking)return;ticking=true;requestAnimationFrame(()=>{
+  hd.classList.toggle('scrolled',scrollY>10);
+  if(!reduced&&scrollY<900){$('#heroSun').style.translate='0 '+(scrollY*.16)+'px';$('#heroRiver').style.translate='0 '+(scrollY*.06)+'px'}
+  ticking=false;})},{passive:true});
 if('IntersectionObserver'in window){
-  const secIO=new IntersectionObserver(es=>es.forEach(x=>{
-    if(x.isIntersecting)$$('[data-nav]').forEach(a=>a.classList.toggle('on',a.dataset.nav===x.target.id));
-  }),{rootMargin:'-40% 0px -55% 0px'});
-  ['collections','places','suggest'].forEach(id=>{const el=document.getElementById(id);if(el)secIO.observe(el)});
+  const sIO=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting)$$('[data-nav]').forEach(a=>a.classList.toggle('on',a.dataset.nav===x.target.id))}),{rootMargin:'-40% 0px -55% 0px'});
+  ['collections','places','map-sec','suggest'].forEach(id=>{const el=document.getElementById(id);if(el)sIO.observe(el)});
 }
 setInterval(()=>{if(!$$('dialog').some(d=>d.open))render()},60000);
 
-/* ================= старт ================= */
+/* старт */
 $('#rtStops').innerHTML=ROUTE_STOPS.map((s,i)=>`<li><span class="n">${i+1}</span><div style="flex:1"><b>${s.n}</b><span>${s.d}</span></div><a href="https://yandex.ru/maps/?pt=${s.lng},${s.lat}&z=16&l=map" target="_blank" rel="noopener">На карте</a></li>`).join('');
-$('#routeBuild').href=routeUrl;
-$('#rtBuild').href=routeUrl;
-
-const cached=store.get('m4.ph.v1',null);
+$('#routeBuild').href=routeUrl;$('#rtBuild').href=routeUrl;
+$('#legend').innerHTML=Object.entries(CAT).filter(([k])=>!['Местный маршрут','Город'].includes(k)).map(([k,v])=>`<span><i style="background:${v.c}"></i>${k}</span>`).join('');
+const cached=store.get('m4.ph.v2',null);
 if(cached&&cached.at&&Date.now()-cached.at<6048e5){applyPhotos(cached.data);Photo.pending=false}
-renderChips();renderCols();paintArt();saveState();render();observeRv();
-
+renderChips();renderCols();paintArt();saveState();render();observeRv();initMap();
 if(Photo.pending){
-  resolvePhotos().then(data=>{
-    applyPhotos(data);Photo.pending=false;
-    store.set('m4.ph.v1',{at:Date.now(),data});
-    renderCols();paintArt();render();
-    if($('#sourcesDlg').open)renderSources();
-  }).catch(()=>{Photo.pending=false;renderCols();paintArt();render()});
+  resolvePhotos().then(d=>{applyPhotos(d);Photo.pending=false;store.set('m4.ph.v2',{at:Date.now(),data});renderCols();paintArt();render();if($('#sourcesDlg').open)renderSources()})
+  .catch(()=>{Photo.pending=false;renderCols();paintArt();render()});
 }

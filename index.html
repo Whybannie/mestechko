@@ -4,19 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<meta name="theme-color" content="#FFF9F0">
-<title>Месте4ко — куда сходить в Новосибирске</title>
-<meta name="description" content="Гид по Новосибирску: готовые подборки, честные описания с минусами, реальный бюджет и дата проверки. Найди место под своё настроение.">
-<meta property="og:title" content="Месте4ко — найди место для себя">
-<meta property="og:description" content="Свидание, встреча с другом или час для себя — найди план, ради которого хочется выйти из дома.">
+<meta name="theme-color" content="#FFF6E8">
+<title>Месте4ко — куда идти в Новосибирске</title>
+<meta name="description" content="Городской журнал о местах Новосибирска: 26 проверенных адресов, цены, минусы, подборки и карта.">
+<meta property="og:title" content="Месте4ко — куда идти в Новосибирске">
+<meta property="og:description" content="26 мест, проверенных ногами. Цены, минусы и лучшее время.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23FFF9F0'/%3E%3Cpath d='M16 4a10 10 0 0 0-10 10c0 7 10 14 10 14s10-7 10-14A10 10 0 0 0 16 4z' fill='%23FF6B5E'/%3E%3Ctext x='16' y='19' font-family='Arial,sans-serif' font-size='13' font-weight='bold' fill='%23fff' text-anchor='middle'%3E4%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF6E8'/%3E%3Crect x='5' y='5' width='22' height='22' rx='6' fill='%23FF3B21'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='16' font-weight='bold' fill='%23fff' text-anchor='middle'%3E4%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Golos+Text:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800&family=Golos+Text:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/components.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <script src="js/data.js" defer></script>
 <script src="js/app.js" defer></script>
 </head>
@@ -27,52 +29,51 @@
   <div class="wrap hd-in">
     <a class="logo" href="#top" aria-label="Месте4ко — на главную">Месте<span class="four">4</span>ко</a>
     <nav aria-label="Разделы">
-      <a href="#places" data-nav="places">Места</a>
       <a href="#collections" data-nav="collections">Подборки</a>
-      <a href="#suggest" data-nav="suggest">Предложить место</a>
+      <a href="#places" data-nav="places">Места</a>
+      <a href="#map-sec" data-nav="map-sec">Карта</a>
+      <a href="#suggest" data-nav="suggest">Предложить</a>
     </nav>
     <div class="sp"></div>
-    <span class="city"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10z"/><circle cx="10" cy="8" r="2"/></svg>Новосибирск</span>
+    <span class="city"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10z"/><circle cx="10" cy="8" r="2"/></svg>Новосибирск</span>
     <button class="saved-btn" id="savedBtn" type="button" aria-pressed="false">♥ Сохранённое <b id="savedCount">0</b></button>
   </div>
 </header>
 
 <main id="main">
-
   <section class="hero" id="top">
     <div class="hero-sun" id="heroSun" aria-hidden="true"></div>
-    <svg class="hero-river" id="heroRiver" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M0 60 Q150 20 300 60 T600 60 T900 60 T1200 60" fill="none" stroke="#19B7A5" stroke-width="3"/>
-      <path d="M0 92 Q150 52 300 92 T600 92 T900 92 T1200 92" fill="none" stroke="#2B5FA8" stroke-width="2" opacity=".5"/>
+    <svg class="hero-river" id="heroRiver" viewBox="0 0 1200 110" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 58 Q150 18 300 58 T600 58 T900 58 T1200 58" fill="none" stroke="#00BFA6" stroke-width="4"/>
+      <path d="M0 90 Q150 50 300 90 T600 90 T900 90 T1200 90" fill="none" stroke="#1633FF" stroke-width="3" opacity=".5"/>
     </svg>
     <div class="wrap hero-grid">
       <div>
-        <span class="kicker stage d1">Гид по Новосибирску</span>
-        <h1 class="stage d2">Найди место под своё <span class="hl">настроение.</span></h1>
-        <p class="sub stage d3">Свидание, встреча с другом или час для себя — найди план, ради которого хочется выйти из дома.</p>
+        <div class="issue stage d1"><i></i>Выпуск №14 · ноябрь 2026 · Новосибирск</div>
+        <h1 class="stage d2">Куда идти<br><span class="mark">сегодня</span></h1>
+        <p class="deck stage d3">26 мест, проверенных ногами. У каждого — цена, минус и лучшее время. Звёзд и отзывов из воздуха нет.</p>
         <form class="search stage d4" id="searchForm" role="search">
-          <input id="q" type="search" aria-label="Что ищем?" placeholder="Что ищем? Свидание, кофе, парк, с ребёнком…" autocomplete="off">
-          <button class="btn btn-coral" type="submit">Найти место</button>
+          <input id="q" type="search" aria-label="Поиск по местам" placeholder="Кофе, парк, свидание, с ребёнком…" autocomplete="off">
+          <button class="btn btn-red" type="submit">Найти</button>
         </form>
         <div class="want stage d5">
           <div class="l">Что хочется?</div>
           <div class="chips" id="chips"></div>
         </div>
       </div>
-      <aside class="route stage d6" aria-label="Местный маршрут вдоль Оби">
+      <aside class="route stage d6" aria-label="Маршрут вдоль Оби">
         <div class="route-art" id="routeArt"></div>
-        <div class="route-plate"><span class="plate">54 / НСК</span><span class="route-tag">Местный маршрут</span></div>
-        <span class="route-stamp">Проверено 19.11</span>
+        <div class="route-plate"><span class="plate">54 / НСК</span><span class="route-tag">Маршрут</span></div>
         <div class="route-b">
           <h2>Вдоль Оби</h2>
-          <div class="route-meta"><span class="rpill">≈ 2,5 км</span><span class="rpill">50 минут пешком</span><span class="rpill">3 остановки</span><span class="rpill">Бесплатно</span></div>
+          <div class="route-meta"><span class="rpill">2,5 км</span><span class="rpill">50 минут</span><span class="rpill">3 остановки</span><span class="rpill">Бесплатно</span></div>
           <ol class="stops">
-            <li><span class="n">1</span>Михайловская набережная — начать с воды и заката</li>
-            <li><span class="n">2</span>Причал «Речной вокзал» — кофе навынос и вид на мосты</li>
-            <li><span class="n">3</span>Смотровая у метромоста — лучший ракурс на Обь вечером</li>
+            <li><span class="n">1</span>Набережная — фонари и закат над водой</li>
+            <li><span class="n">2</span>Речной вокзал — кофе навынос, вид на мосты</li>
+            <li><span class="n">3</span>Метромост — лучший ракурс на реку</li>
           </ol>
           <div class="route-actions">
-            <a class="btn btn-coral" id="routeBuild" target="_blank" rel="noopener">Построить маршрут</a>
+            <a class="btn btn-red" id="routeBuild" target="_blank" rel="noopener">Маршрут</a>
             <button class="btn btn-line" id="routeOpen" type="button">Что по пути</button>
           </div>
         </div>
@@ -80,12 +81,12 @@
     </div>
   </section>
 
-  <section class="sec band-mint" id="collections">
+  <section class="sec band-amber" id="collections">
     <div class="wrap">
       <div class="sec-head rv">
-        <span class="sec-num">01 · Идеи от Месте4ко</span>
-        <h2 class="sec-title">Готовые подборки</h2>
-        <p class="sec-sub">Не бесконечный список организаций, а готовые ответы на вопрос «куда пойти». У каждой подборки есть автор и дата обновления.</p>
+        <span class="sec-num">01 / Подборки</span>
+        <h2 class="sec-title">Готовые планы</h2>
+        <p class="deck">Восемь сценариев: вечер, выходной, дождь, пустой кошелёк.</p>
       </div>
       <div id="colFeatured"></div>
       <div class="cols" id="colGrid"></div>
@@ -95,97 +96,82 @@
   <section class="sec" id="places">
     <div class="wrap">
       <div class="sec-head rv">
-        <span class="sec-num">02 · По твоим условиям</span>
-        <h2 class="sec-title">Выбери место</h2>
-        <p class="sec-sub">Есть время на прогулку или хочется в тепло? Подстрой подборку под себя.</p>
+        <span class="sec-num">02 / Каталог</span>
+        <h2 class="sec-title">Все места</h2>
+        <p class="deck">Фильтры слева меняют и ленту, и карту.</p>
       </div>
-      <noscript><p style="padding:16px;border:1.5px dashed rgba(23,43,77,.27);border-radius:14px;margin-bottom:16px">Для поиска и фильтров включи JavaScript в браузере.</p></noscript>
+      <noscript><p style="padding:16px;border:2px dashed rgba(17,26,56,.3);border-radius:12px;margin-bottom:16px">Для поиска и фильтров включи JavaScript.</p></noscript>
       <div class="places-grid">
-        <aside class="filters rv" aria-label="Фильтры подбора">
-          <button class="btn btn-teal btn-block" id="randomBtn" type="button">
-            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="15" height="15" rx="3"/><circle cx="7" cy="7" r="1.2" fill="currentColor"/><circle cx="13" cy="13" r="1.2" fill="currentColor"/><circle cx="13" cy="7" r="1.2" fill="currentColor"/><circle cx="7" cy="13" r="1.2" fill="currentColor"/></svg>
-            Случайное место
-          </button>
-          <div class="fgroup">
-            <div class="fl">С кем</div>
-            <div class="seg" data-group="company">
-              <button type="button" data-val="any" class="on">Неважно</button>
-              <button type="button" data-val="two">Вдвоём</button>
-              <button type="button" data-val="friends">С друзьями</button>
-              <button type="button" data-val="kids">С детьми</button>
-              <button type="button" data-val="solo">Один / одна</button>
-            </div>
-          </div>
-          <div class="fgroup">
-            <div class="fl">Настроение</div>
-            <div class="seg" data-group="mood">
-              <button type="button" data-val="any" class="on">Любое</button>
-              <button type="button" data-val="quiet">Без суеты</button>
-              <button type="button" data-val="unusual">Что-то необычное</button>
-              <button type="button" data-val="active">Хочу подвигаться</button>
-            </div>
-          </div>
-          <div class="fgroup">
-            <div class="fl">Бюджет на человека</div>
-            <div class="seg" data-group="budget">
-              <button type="button" data-val="any" class="on">Любой</button>
-              <button type="button" data-val="free">Бесплатно</button>
-              <button type="button" data-val="500">До 500 ₽</button>
-              <button type="button" data-val="1000">До 1 000 ₽</button>
-              <button type="button" data-val="2000">До 2 000 ₽</button>
-            </div>
-          </div>
-          <div class="fgroup">
-            <div class="fl">Погода</div>
-            <div class="seg" data-group="weather">
-              <button type="button" data-val="any" class="on">Неважно</button>
-              <button type="button" data-val="in">В помещении</button>
-              <button type="button" data-val="out">На улице</button>
-            </div>
-          </div>
+        <aside class="filters rv" aria-label="Фильтры">
+          <button class="btn btn-lime btn-block" id="randomBtn" type="button">Случайное место</button>
+          <div class="fgroup"><div class="fl">С кем</div><div class="seg" data-group="company">
+            <button type="button" data-val="any" class="on">Неважно</button><button type="button" data-val="two">Вдвоём</button><button type="button" data-val="friends">С друзьями</button><button type="button" data-val="kids">С детьми</button><button type="button" data-val="solo">Один</button>
+          </div></div>
+          <div class="fgroup"><div class="fl">Настроение</div><div class="seg" data-group="mood">
+            <button type="button" data-val="any" class="on">Любое</button><button type="button" data-val="quiet">Без суеты</button><button type="button" data-val="unusual">Необычное</button><button type="button" data-val="active">Подвигаться</button>
+          </div></div>
+          <div class="fgroup"><div class="fl">Бюджет на человека</div><div class="seg" data-group="budget">
+            <button type="button" data-val="any" class="on">Любой</button><button type="button" data-val="free">Бесплатно</button><button type="button" data-val="500">До 500 ₽</button><button type="button" data-val="1000">До 1 000 ₽</button><button type="button" data-val="2000">До 2 000 ₽</button>
+          </div></div>
+          <div class="fgroup"><div class="fl">Погода</div><div class="seg" data-group="weather">
+            <button type="button" data-val="any" class="on">Неважно</button><button type="button" data-val="in">Под крышей</button><button type="button" data-val="out">На улице</button>
+          </div></div>
           <button class="fswitch" id="openTgl" type="button" aria-pressed="false">Открыто сейчас <span class="sw"></span></button>
-          <div class="fsort">
-            <div class="fl">Сначала</div>
-            <select id="sortSel" aria-label="Сортировка">
-              <option value="rec">Выбор редакции</option>
-              <option value="cheap">Сначала дешевле</option>
-              <option value="fresh">Недавно проверенные</option>
-              <option value="name">По названию</option>
+          <div class="fsort"><div class="fl">Порядок</div>
+            <select id="sortSel" aria-label="Порядок">
+              <option value="rec">Выбор редакции</option><option value="cheap">Сначала дешевле</option>
+              <option value="fresh">Недавно проверенные</option><option value="name">По названию</option>
             </select>
           </div>
           <button class="btn btn-line btn-block btn-sm" id="resetBtn" type="button">Сбросить</button>
-          <p class="fnote">По обычному графику Новосибирска — с учётом времени входа, где оно указано. Это не проверка в реальном времени; сеансы и места по записи не учитываем.</p>
+          <p class="fnote">График обычный, не в реальном времени. Сеансы и места по записи не учитываем.</p>
           <p class="fnote"><b>Цены без дороги и доплат.</b></p>
         </aside>
         <div>
-          <div class="results-head">
-            <span class="rcount" id="countLine" aria-live="polite"></span>
-            <span class="rhint" id="activeHint"></span>
-          </div>
-          <div class="banner" id="banner">
-            <b id="bannerName"></b><span class="meta" id="bannerMeta"></span>
-            <button id="bannerClear" type="button">Показать все ✕</button>
-          </div>
+          <div class="results-head"><span class="rcount" id="countLine" aria-live="polite"></span><span class="rhint" id="activeHint"></span></div>
+          <div class="banner" id="banner"><b id="bannerName"></b><span id="bannerMeta"></span><button id="bannerClear" type="button">Показать все ✕</button></div>
           <div class="grid" id="grid"></div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="sec band-sky" id="suggest">
+  <section class="sec band-ink" id="map-sec">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="sec-num">03 / Карта</span>
+        <h2 class="sec-title">Город целиком</h2>
+        <p class="deck">Метки покрашены по разделам. Нажми метку или строку справа — откроется карточка.</p>
+      </div>
+      <div class="map-tools rv">
+        <button class="btn btn-lime btn-sm" id="mapFit" type="button">Показать все</button>
+        <button class="btn btn-lime btn-sm" id="mapGeo" type="button">Рядом со мной</button>
+        <span class="map-count" id="mapCount"></span>
+      </div>
+      <div class="map-grid rv">
+        <div class="map-wrap"><div id="cityMap"></div></div>
+        <div class="map-side">
+          <h3>На карте сейчас</h3>
+          <div class="map-list" id="mapList"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec band-teal" id="suggest">
     <div class="wrap">
       <div class="suggest rv">
         <div>
-          <span class="sec-num">03 · Знаешь город лучше?</span>
-          <h2 class="sec-title">Какого места не хватает?</h2>
-          <p>Расскажи, куда ты сам любишь ходить и что там стоит попробовать. Мы проверим и добавим — с датой проверки и честным минусом.</p>
-          <button class="btn btn-coral" id="suggestOpen" type="button">Предложить место</button>
+          <span class="sec-num">04 / Читатели</span>
+          <h2 class="sec-title">Чего не хватает?</h2>
+          <p>Напиши про своё место: что там делать, сколько стоит, когда идти. Съходим, проверим и поставим дату.</p>
+          <button class="btn btn-blue" id="suggestOpen" type="button">Предложить место</button>
         </div>
         <div class="suggest-art" id="suggestArt" aria-hidden="true"></div>
       </div>
     </div>
   </section>
-
 </main>
 
 <footer>
@@ -200,19 +186,15 @@
       <a class="linklike" href="#suggest">Предложить место</a>
     </div>
     <div class="sp"></div>
-    <div class="ver"><b>Версия для просмотра · Новосибирск</b>Данные проверяем вручную. Заметил неточность — скажи нам.</div>
+    <div class="ver"><b>Выпуск №14 · ноябрь 2026</b>Редакция: Антон Маслаков<br>Новосибирск · данные проверены вручную</div>
   </div>
 </footer>
 
 <dialog id="placeDlg" aria-labelledby="pdName">
   <div class="dlg-cover" id="pdCover"><button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button></div>
   <div class="dlg-b">
-    <div class="cat" id="pdCat"></div>
-    <h3 id="pdName"></h3>
-    <div class="dlg-addr" id="pdAddr"></div>
-    <p class="dlg-desc" id="pdDesc"></p>
-    <div class="minus" id="pdMinus"></div>
-    <div class="dlg-tags" id="pdTags"></div>
+    <div class="cat" id="pdCat"></div><h3 id="pdName"></h3><div class="dlg-addr" id="pdAddr"></div>
+    <p class="dlg-desc" id="pdDesc"></p><div class="minus" id="pdMinus"></div><div class="dlg-tags" id="pdTags"></div>
     <div class="dlg-grid">
       <div class="dlg-cell"><div class="l">Бюджет</div><div class="v" id="pdBudget"></div></div>
       <div class="dlg-cell"><div class="l">Лучшее время</div><div class="v" id="pdBest"></div></div>
@@ -221,8 +203,9 @@
     </div>
     <div class="dlg-verify"><span class="stamp" id="pdStamp"></span><span class="src" id="pdSrc"></span><button class="linklike" id="pdReport" type="button">Нашли ошибку?</button></div>
     <div class="dlg-actions">
-      <a class="btn btn-coral" id="pdRoute" target="_blank" rel="noopener">Построить маршрут</a>
-      <a class="btn btn-teal" id="pdMap" target="_blank" rel="noopener">Открыть на карте</a>
+      <a class="btn btn-red" id="pdRoute" target="_blank" rel="noopener">Маршрут</a>
+      <button class="btn btn-blue" id="pdOnMap" type="button">На карте города</button>
+      <a class="btn btn-line" id="pdMap" target="_blank" rel="noopener">Яндекс Карты</a>
       <button class="btn btn-line" id="pdSave" type="button" aria-pressed="false">Сохранить</button>
     </div>
   </div>
@@ -231,74 +214,53 @@
 <dialog id="routeDlg" aria-labelledby="rtTitle">
   <div class="dlg-cover" id="rtCover"><button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button></div>
   <div class="dlg-b">
-    <div class="cat">Местный маршрут · 54 / НСК</div>
-    <h3 id="rtTitle">Вдоль Оби</h3>
-    <p class="dlg-desc">Прогулка по правому берегу: вода, мосты и закат. Идти лучше вечером, когда включают подсветку. Обратно — тем же путём или на автобусе по Большевистской.</p>
-    <div class="route-meta"><span class="rpill">≈ 2,5 км</span><span class="rpill">50 минут</span><span class="rpill">Бесплатно</span><span class="rpill">На улице</span></div>
+    <div class="cat">Маршрут · 54 / НСК</div><h3 id="rtTitle">Вдоль Оби</h3>
+    <p class="dlg-desc">Правый берег от набережной до метромоста. Идти вечером, когда включают подсветку. Обратно — автобус по Большевистской.</p>
+    <div class="route-meta"><span class="rpill">2,5 км</span><span class="rpill">50 минут</span><span class="rpill">Бесплатно</span><span class="rpill">На улице</span></div>
     <ol class="route-dlg-stops" id="rtStops"></ol>
-    <div class="minus"><b>Но:</b> ветер с реки сильнее, чем в городе — возьми слой теплее и обуйся для долгих прогулок.</div>
-    <div class="dlg-actions">
-      <a class="btn btn-coral" id="rtBuild" target="_blank" rel="noopener">Построить маршрут</a>
-      <button class="btn btn-line" data-close type="button">Закрыть</button>
-    </div>
+    <div class="minus"><b>Минус</b> Ветер с реки сильнее, чем в городе: нужен лишний слой.</div>
+    <div class="dlg-actions"><a class="btn btn-red" id="rtBuild" target="_blank" rel="noopener">Построить маршрут</a><button class="btn btn-line" data-close type="button">Закрыть</button></div>
   </div>
 </dialog>
 
 <dialog id="suggestDlg" aria-labelledby="sgTitle">
   <form class="dlg-form" id="suggestForm">
     <h3 id="sgTitle">Предложить место</h3>
-    <p class="lead">Расскажи, куда ты сам любишь ходить и что там стоит попробовать. Непроверенные места не публикуем.</p>
-    <input class="field" name="name" placeholder="Название места" required>
+    <p class="lead">Непроверенные адреса не публикуем: сначала съходим сами.</p>
+    <input class="field" name="name" placeholder="Название" required>
     <input class="field" name="addr" placeholder="Адрес или район" required>
-    <select class="field" name="cat" required>
-      <option value="" disabled selected>Категория</option>
-      <option>Поесть</option><option>Погулять</option><option>С детьми</option>
-      <option>Вдвоём</option><option>Поработать</option><option>Бесплатно</option><option>Другое</option>
-    </select>
-    <textarea class="field" name="story" placeholder="Что там стоит попробовать? Когда лучше идти? Сколько стоит?" required></textarea>
-    <input class="field" name="contact" placeholder="Telegram или почта (не обязательно)">
-    <div class="form-row">
-      <button class="btn btn-line" type="button" data-close>Отмена</button>
-      <button class="btn btn-coral" type="submit">Предложить место</button>
-    </div>
+    <select class="field" name="cat" required><option value="" disabled selected>Раздел</option><option>Поесть</option><option>Погулять</option><option>С детьми</option><option>Вдвоём</option><option>Поработать</option><option>Полезное</option><option>Другое</option></select>
+    <textarea class="field" name="story" placeholder="Что там делать, сколько стоит, когда лучше идти?" required></textarea>
+    <input class="field" name="contact" placeholder="Telegram или почта — по желанию">
+    <div class="form-row"><button class="btn btn-line" type="button" data-close>Отмена</button><button class="btn btn-red" type="submit">Отправить</button></div>
   </form>
   <div class="ok-panel" id="suggestOk">
     <div class="big"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
-    <h3>Спасибо! Заявка принята</h3>
-    <p>Мы проверим место и добавим его с датой проверки. Если оставил контакт — напишем, когда опубликуем.</p>
-    <button class="btn btn-line" id="suggestAgain" type="button">Предложить ещё одно</button>
+    <h3>Принято</h3><p>Проверим и добавим с датой. Если оставил контакт — напишем.</p>
+    <button class="btn btn-line" id="suggestAgain" type="button">Ещё одно</button>
   </div>
 </dialog>
 
 <dialog id="reportDlg" aria-labelledby="rpTitle">
   <form class="dlg-form" id="reportForm">
     <h3 id="rpTitle">Нашли ошибку?</h3>
-    <p class="lead">Место получит статус «На проверке», пока мы не перепроверим данные. Спасибо, что помогаешь.</p>
+    <p class="lead">Место получит статус «На проверке», пока не перепроверим.</p>
     <select class="field" id="rpPlace" aria-label="Место" required></select>
-    <select class="field" id="rpType" aria-label="Что не так" required>
-      <option value="" disabled selected>Что не так?</option>
-      <option>Заведение закрылось</option><option>Изменились цены</option><option>Другой график работы</option>
-      <option>Неверный адрес</option><option>Особенности не соответствуют</option><option>Другое</option>
-    </select>
-    <textarea class="field" id="rpText" placeholder="Расскажи подробнее — как на самом деле?" required></textarea>
-    <div class="form-row">
-      <button class="btn btn-line" type="button" data-close>Отмена</button>
-      <button class="btn btn-coral" type="submit">Отправить</button>
-    </div>
+    <select class="field" id="rpType" aria-label="Что не так" required><option value="" disabled selected>Что не так?</option><option>Закрылось</option><option>Изменились цены</option><option>Другой график</option><option>Неверный адрес</option><option>Особенности не те</option><option>Другое</option></select>
+    <textarea class="field" id="rpText" placeholder="Как на самом деле?" required></textarea>
+    <div class="form-row"><button class="btn btn-line" type="button" data-close>Отмена</button><button class="btn btn-red" type="submit">Отправить</button></div>
   </form>
 </dialog>
 
 <dialog id="sourcesDlg" aria-labelledby="srcTitle">
   <div class="dlg-form">
     <h3 id="srcTitle">Источники фото</h3>
-    <p class="lead">Фотографии мест — из открытых источников: Wikipedia и Wikimedia Commons. У каждого снимка указан автор и лицензия. Где фото пока нет — снимем сами после визита.</p>
-    <p class="lead" id="srcLead" style="margin-bottom:0"></p>
+    <p class="lead" id="srcLead"></p>
     <ul class="src-list" id="srcList"></ul>
     <div class="form-row" style="margin-top:16px"><button class="btn btn-line" data-close type="button">Закрыть</button></div>
   </div>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" popover="manual"><span id="toastText"></span><button id="toastAct" type="button" hidden></button></div>
-
 </body>
 </html>
