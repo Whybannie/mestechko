@@ -17,7 +17,6 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/components.css">
-<script src="js/scenes.js" defer></script>
 <script src="js/data.js" defer></script>
 <script src="js/app.js" defer></script>
 </head>
@@ -292,7 +291,8 @@
 <dialog id="sourcesDlg" aria-labelledby="srcTitle">
   <div class="dlg-form">
     <h3 id="srcTitle">Источники фото</h3>
-    <p class="lead">Обложки мест — авторские рисованные схемы редакции. Реальные фотографии добавляем после визита и проверки; у каждой появится автор и источник. Хочешь поделиться снимком — напиши через «Предложить место».</p>
+    <p class="lead">Фотографии мест — из открытых источников: Wikipedia и Wikimedia Commons. У каждого снимка указан автор и лицензия. Где фото пока нет — снимем сами после визита.</p>
+    <p class="lead" id="srcLead" style="margin-bottom:0"></p>
     <ul class="src-list" id="srcList"></ul>
     <div class="form-row" style="margin-top:16px"><button class="btn btn-line" data-close type="button">Закрыть</button></div>
   </div>

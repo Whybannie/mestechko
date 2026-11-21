@@ -1,4 +1,4 @@
-/* Месте4ко · app.js — состояние, фильтры, отрисовка, окна, живые обновления */
+/* Месте4ко · app.js — фото из открытых источников, фильтры, окна, живое состояние */
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={
@@ -33,9 +33,96 @@ const stamp=p=>recheck(p)?'<span class="stamp recheck">На проверке</sp
 const budgetLabel=p=>p.budget&&p.budget[1]===0?'Бесплатно':p.budgetText;
 const mapUrl=p=>`https://yandex.ru/maps/?pt=${p.lng},${p.lat}&z=17&l=map`;
 const placeRoute=p=>`https://yandex.ru/maps/?rtext=~${p.lat},${p.lng}`;
-const cover=p=>{const base=scenes[p.ill]();return p.photo?base+`<img src="${p.photo}" alt="" loading="lazy" onerror="this.remove()">`:base};
 
-/* ---------- фильтрация ---------- */
+/* ================= ФОТО: Wikipedia / Wikimedia Commons ================= */
+const WIKI={
+  naberezhnaya:['Михайловская набережная'],
+  zaeltsovsky:['Заельцовский парк'],
+  bugrinskaya:['Бугринская роща'],
+  narymsky:['Нарымский сквер'],
+  centralpark:['Центральный парк (Новосибирск)','Новосибирский центральный парк'],
+  novat:['Новосибирский театр оперы и балета'],
+  fakel:['Красный факел (театр)','Красный факел'],
+  zoo:['Новосибирский зоопарк'],
+  kukolny:['Новосибирский областной театр кукол'],
+  delfinia:['Дельфиния','Новосибирский дельфинарий'],
+  planetarium:['Новосибирский планетарий'],
+  aquamir:['Аквамир','Аквамир (аквапарк)'],
+  gpntb:['Государственная публичная научно-техническая библиотека СО РАН','ГПНТБ СО РАН'],
+  aura:['Аура (торговый центр)','Аура (Новосибирск)'],
+  tochka:['Академпарк','Технопарк Академгородка']
+};
+const HERO_T=['Михайловская набережная','Бугринский мост','Речной вокзал (Новосибирск)'];
+const CITY_T=['Новосибирск'];
+const Photo={pending:true,hero:{name:'Вдоль Оби',cat:'Местный маршрут'},city:{name:'Новосибирск',cat:'Город'}};
+const TINT={
+  'Погулять':['#E3F4F0','#CDEBE4'],'Поесть':['#FFF2D8','#FFE6BC'],'Вдвоём':['#FFE9E4','#FFD9D0'],
+  'С детьми':['#E9EEF7','#D8E2F2'],'Поработать':['#E9EEF7','#DCE4F1'],'Необычное':['#FFF2D8','#FFE9C9'],
+  'Полезное':['#E3F4F0','#D5EDE7'],'Активно':['#E3F4F0','#CDEBE4'],'Местный маршрут':['#FFE9E4','#FFDCCF'],'Город':['#E9EEF7','#D8E2F2']
+};
+const stripHtml=v=>String(v==null?'':v).replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+const chunk=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o};
+const articleUrl=t=>'https://ru.wikipedia.org/wiki/'+encodeURIComponent(t.replace(/ /g,'_'));
+
+async function api(params){
+  const ctl=new AbortController();const timer=setTimeout(()=>ctl.abort(),9000);
+  try{
+    const u='https://ru.wikipedia.org/w/api.php?'+new URLSearchParams({format:'json',formatversion:'2',origin:'*',...params});
+    const r=await fetch(u,{signal:ctl.signal});
+    if(!r.ok)throw new Error('http '+r.status);
+    return await r.json();
+  }finally{clearTimeout(timer)}
+}
+async function resolvePhotos(){
+  const titles=[...new Set([...Object.values(WIKI).flat(),...HERO_T,...CITY_T])];
+  const found={};
+  for(const part of chunk(titles,8)){
+    const j=await api({action:'query',redirects:'1',prop:'pageimages',piprop:'thumbnail|name',pithumbsize:'900',titles:part.join('|')});
+    const q=j.query||{},alias={};
+    (q.normalized||[]).forEach(n=>alias[n.from]=n.to);
+    (q.redirects||[]).forEach(n=>alias[n.from]=n.to);
+    const follow=t=>{let x=t,i=0;while(alias[x]&&i++<6)x=alias[x];return x};
+    const byTitle={};
+    (q.pages||[]).forEach(p=>{if(p&&p.thumbnail&&p.thumbnail.source)byTitle[p.title]={src:p.thumbnail.source,file:p.pageimage||''}});
+    part.forEach(t=>{const hit=byTitle[follow(t)];if(hit)found[t]=hit});
+  }
+  const files=[...new Set(Object.values(found).map(v=>v.file).filter(Boolean))];
+  const meta={};
+  for(const part of chunk(files,8)){
+    try{
+      const j=await api({action:'query',prop:'imageinfo',iiprop:'url|extmetadata',titles:part.map(f=>'File:'+f).join('|')});
+      ((j.query||{}).pages||[]).forEach(p=>{
+        const ii=(p.imageinfo||[])[0];if(!ii)return;
+        const em=ii.extmetadata||{};
+        meta[p.title.replace(/^File:/,'')]={
+          author:stripHtml(em.Artist&&em.Artist.value)||'автор не указан',
+          license:stripHtml(em.LicenseShortName&&em.LicenseShortName.value)||'свободная лицензия',
+          page:ii.descriptionurl||('https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(p.title.replace(/^File:/,'')))
+        };
+      });
+    }catch(e){}
+  }
+  const pick=list=>{for(const t of list){if(found[t])return{photo:found[t].src,credit:{...(meta[found[t].file]||{author:'автор не указан',license:'свободная лицензия',page:'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(found[t].file)}),title:t,article:articleUrl(t)}}}return null};
+  const out={places:{},hero:null,city:null};
+  PLACES.forEach(p=>{const hit=pick(WIKI[p.id]||[]);if(hit)out.places[p.id]=hit});
+  out.hero=pick(HERO_T);out.city=pick(CITY_T);
+  return out;
+}
+function applyPhotos(data){
+  if(!data)return;
+  PLACES.forEach(p=>{const h=data.places&&data.places[p.id];if(h){p.photo=h.photo;p.credit=h.credit}else{delete p.photo;delete p.credit}});
+  if(data.hero){Photo.hero.photo=data.hero.photo;Photo.hero.credit=data.hero.credit}
+  if(data.city){Photo.city.photo=data.city.photo;Photo.city.credit=data.city.credit}
+}
+function coverInner(p,eager){
+  const t=TINT[p.cat]||['#E3F4F0','#CDEBE4'];
+  const typo=`<span class="typo" style="--t1:${t[0]};--t2:${t[1]}"><span class="tk">${p.cat||''}</span><span class="tn">${p.name}</span><span class="tr"></span></span>`;
+  const img=p.photo?`<img class="ph" src="${p.photo}" alt="" ${eager?'':'loading="lazy"'} decoding="async" onerror="this.remove()">`:'';
+  const skel=(!p.photo&&Photo.pending)?'<span class="skel"></span>':'';
+  return typo+img+skel+'<span class="scrim"></span>';
+}
+
+/* ================= фильтрация ================= */
 function filtered(){
   let list=PLACES.filter(p=>{
     if(S.q){const hay=(p.name+' '+p.desc+' '+p.minus+' '+p.addr+' '+p.area+' '+p.cat+' '+p.feat.join(' ')).toLowerCase();if(!hay.includes(S.q.toLowerCase().trim()))return false}
@@ -68,11 +155,11 @@ function activeSummary(){
   return bits.filter(Boolean).join(' · ');
 }
 
-/* ---------- отрисовка ---------- */
+/* ================= отрисовка ================= */
 function cardHtml(p){
   const saved=S.saved.has(p.id);
   return `<article class="card rv" data-id="${p.id}" tabindex="0" role="button" aria-label="Подробнее: ${p.name}">
-    <div class="cover">${cover(p)}<span class="cat">${p.cat}</span></div>
+    <div class="cover">${coverInner(p)}<span class="cat">${p.cat}</span></div>
     <div class="card-b">
       <div class="area">${p.area} район</div>
       <h3>${p.name}</h3>
@@ -117,7 +204,7 @@ function renderCols(){
     <div class="txt"><div class="k">Подборка дня</div><h3>${f.n}</h3><p>${f.d}</p>
     <div class="meta"><span>Собрал Антон</span><span>Обновлено 19 ноября 2026</span></div>
     <span class="cnt">${cnt} ${placesWord(cnt)} на сегодняшний вечер →</span></div>
-    <div class="art">${scenes.water()}</div></button>`;
+    <div class="art">${coverInner(Photo.hero)}</div></button>`;
   const tints={duo:'var(--blush)',kidsrain:'var(--sky)',work:'var(--sky)',free:'var(--mint)',cheap:'var(--sun-soft)',unusual:'var(--sun-soft)',late:'var(--mint)'};
   const icons={duo:CHIPS[4].ic,kidsrain:CHIPS[3].ic,work:CHIPS[5].ic,free:CHIPS[6].ic,cheap:CHIPS[6].ic,unusual:CHIPS[1].ic,late:CHIPS[7].ic};
   $('#colGrid').innerHTML=COLS.slice(1).map(c=>{const n=PLACES.filter(colPred[c.k]).length;
@@ -126,13 +213,25 @@ function renderCols(){
       <h3>${c.n}</h3><p>${c.d}</p>
       <div class="meta"><span>Антон · 19.11</span><b>${n} ${placesWord(n)}</b></div></button>`}).join('');
 }
+function paintArt(){
+  $('#routeArt').innerHTML=coverInner(Photo.hero,true);
+  $('#suggestArt').innerHTML=coverInner(Photo.city);
+  $('#rtCover').innerHTML='<button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button>'+coverInner(Photo.hero,true);
+}
 function renderSources(){
-  $('#srcList').innerHTML=PLACES.map((p,i)=>`<li><span class="n">${i+1}</span><div><b>${p.name}</b><span>${p.photo?'Фото: '+p.photo:'Иллюстрация редакции · фото появится после визита'}</span></div></li>`).join('')+
-  `<li><span class="n">★</span><div><b>Маршрут «Вдоль Оби»</b><span>Схема и остановки — редакция Месте4ко, проверено 19.11.2026</span></div></li>`;
+  const shot=PLACES.filter(p=>p.photo).length;
+  $('#srcLead').textContent='Фотографии — из Wikipedia и Wikimedia Commons, свободные лицензии. Ниже автор и лицензия каждого снимка. Найдено '+shot+' из '+PLACES.length+' мест; остальные снимем сами после визита.';
+  $('#srcList').innerHTML=PLACES.map((p,i)=>{
+    if(p.photo&&p.credit){
+      const c=p.credit;
+      return `<li><img class="th" src="${p.photo}" alt="" loading="lazy" onerror="this.remove()"><div><b>${p.name}</b><span>${c.author} · ${c.license}</span><a href="${c.page}" target="_blank" rel="noopener">Источник снимка</a> · <a href="${c.article}" target="_blank" rel="noopener">статья</a></div></li>`;
+    }
+    return `<li><span class="n">${i+1}</span><div><b>${p.name}</b><span>Фото ещё нет — снимем и поставим после визита</span></div></li>`;
+  }).join('')+(()=>{const h=Photo.hero;return h.photo&&h.credit?`<li><img class="th" src="${h.photo}" alt="" loading="lazy" onerror="this.remove()"><div><b>Маршрут «Вдоль Оби»</b><span>${h.credit.author} · ${h.credit.license}</span><a href="${h.credit.page}" target="_blank" rel="noopener">Источник снимка</a></div></li>`:''})();
 }
 function saveState(){store.set('m4.saved',[...S.saved]);store.set('m4.reports',S.reports);$('#savedCount').textContent=S.saved.size}
 
-/* ---------- тост ---------- */
+/* ================= тост ================= */
 function toast(msg,label,fn){
   const el=$('#toast'),b=$('#toastAct');
   clearTimeout(toastTimer);clearTimeout(toastHide);
@@ -148,7 +247,7 @@ function hideToast(){
   toastHide=setTimeout(()=>{if(!el.classList.contains('show')&&typeof el.hidePopover==='function'){try{el.hidePopover()}catch(e){}}},280);
 }
 
-/* ---------- сохранённое ---------- */
+/* ================= сохранённое ================= */
 function toggleSave(id){
   if(S.saved.has(id)){S.saved.delete(id);lastRemoved=id;saveState();render();toast('Убрано из сохранённых','Вернуть',()=>{S.saved.add(lastRemoved);saveState();render()})}
   else{S.saved.add(id);saveState();render();toast('Сохранено. Найдёшь в «Сохранённом» сверху')}
@@ -160,11 +259,11 @@ function pdSave(){
   $('#pdSave').setAttribute('aria-pressed',String(on));
 }
 
-/* ---------- окна ---------- */
+/* ================= окна ================= */
 function showDialog(d){if(!d.open)d.showModal();document.body.classList.add('lock')}
 function openPlace(id){
   const p=PLACES.find(x=>x.id===id);if(!p)return;currentId=id;
-  $('#pdCover').innerHTML='<button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button>'+cover(p);
+  $('#pdCover').innerHTML='<button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button>'+coverInner(p,true);
   $('#pdCat').textContent=p.cat+' · '+p.area+' район';
   $('#pdName').textContent=p.name;
   $('#pdAddr').textContent=p.addr;
@@ -177,7 +276,7 @@ function openPlace(id){
   $('#pdFeat').textContent=p.feat.join(', ');
   const st=$('#pdStamp');
   if(recheck(p)){st.className='stamp recheck';st.textContent='На проверке'}else{st.className='stamp';st.textContent='Проверено '+fmtDate(p.checked)}
-  $('#pdSrc').textContent=p.src;
+  $('#pdSrc').innerHTML=p.src+(p.credit?` · <a href="${p.credit.page}" target="_blank" rel="noopener">фото: ${p.credit.license}</a>`:'');
   $('#pdRoute').href=placeRoute(p);
   $('#pdMap').href=mapUrl(p);
   pdSave();
@@ -199,7 +298,7 @@ function applyCol(k){
 }
 const goPlaces=()=>$('#places').scrollIntoView({behavior:reduced?'auto':'smooth'});
 
-/* ---------- события ---------- */
+/* ================= события ================= */
 $('#searchForm').addEventListener('submit',e=>{e.preventDefault();S.q=$('#q').value;S.col=null;render();goPlaces()});
 $('#q').addEventListener('input',e=>{S.q=e.target.value;S.col=null;render()});
 $('#chips').addEventListener('click',e=>{
@@ -270,7 +369,7 @@ $$('dialog').forEach(d=>{
   d.addEventListener('close',()=>{if(!$$('dialog').some(x=>x.open))document.body.classList.remove('lock')});
 });
 
-/* ---------- появление, параллакс, живой статус ---------- */
+/* ================= движение и живой статус ================= */
 let io;
 function observeRv(){
   if(!('IntersectionObserver'in window)){$$('.rv').forEach(el=>el.classList.add('in'));return}
@@ -298,11 +397,20 @@ if('IntersectionObserver'in window){
 }
 setInterval(()=>{if(!$$('dialog').some(d=>d.open))render()},60000);
 
-/* ---------- старт ---------- */
-$('#routeArt').innerHTML=routeScene();
-$('#suggestArt').innerHTML=suggestScene();
-$('#rtCover').innerHTML='<button class="dlg-x" data-close type="button" aria-label="Закрыть">✕</button>'+routeScene();
+/* ================= старт ================= */
 $('#rtStops').innerHTML=ROUTE_STOPS.map((s,i)=>`<li><span class="n">${i+1}</span><div style="flex:1"><b>${s.n}</b><span>${s.d}</span></div><a href="https://yandex.ru/maps/?pt=${s.lng},${s.lat}&z=16&l=map" target="_blank" rel="noopener">На карте</a></li>`).join('');
 $('#routeBuild').href=routeUrl;
 $('#rtBuild').href=routeUrl;
-renderChips();renderCols();saveState();render();observeRv();
+
+const cached=store.get('m4.ph.v1',null);
+if(cached&&cached.at&&Date.now()-cached.at<6048e5){applyPhotos(cached.data);Photo.pending=false}
+renderChips();renderCols();paintArt();saveState();render();observeRv();
+
+if(Photo.pending){
+  resolvePhotos().then(data=>{
+    applyPhotos(data);Photo.pending=false;
+    store.set('m4.ph.v1',{at:Date.now(),data});
+    renderCols();paintArt();render();
+    if($('#sourcesDlg').open)renderSources();
+  }).catch(()=>{Photo.pending=false;renderCols();paintArt();render()});
+}

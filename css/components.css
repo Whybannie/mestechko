@@ -1,14 +1,32 @@
-/* Месте4ко · components.css — карточки, окна, формы, тост + ВСЕ адаптивные правила */
+/* Месте4ко · components.css — фотообложки, карточки, окна, бренд + адаптив */
 
-/* сетка и карточка места */
+/* знак */
+.logo{align-items:center;gap:0}
+.logo .four{display:inline-grid;place-items:center;width:27px;height:27px;margin:0 3px;border-radius:8px;background:linear-gradient(135deg,var(--coral),#FF8A6B);color:#fff;font-family:var(--sans);font-weight:900;font-size:15px;line-height:1;transform:none;box-shadow:0 3px 10px rgba(255,107,94,.32);position:relative;top:-1px}
+
+/* фотообложка */
+.cover,.dlg-cover,.route-art,.col-feat .art,.suggest-art{position:relative;overflow:hidden;background:var(--mint)}
+.typo{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;gap:7px;padding:16px;background:linear-gradient(155deg,var(--t1,#E3F4F0) 0%,var(--t2,#CDEBE4) 58%,#FFF9F0 130%)}
+.typo .tk{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2)}
+.typo .tn{font-family:var(--serif);font-weight:700;font-size:clamp(19px,2.1vw,25px);line-height:1.12;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.typo .tr{width:34px;height:3px;border-radius:3px;background:var(--coral)}
+img.ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.scrim{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(23,43,77,.22),rgba(23,43,77,0) 34%,rgba(23,43,77,0) 64%,rgba(23,43,77,.26))}
+.skel{position:absolute;inset:0;background:linear-gradient(100deg,rgba(255,255,255,0) 18%,rgba(255,255,255,.6) 42%,rgba(255,255,255,0) 66%);background-size:240% 100%;animation:shimmer 1.25s linear infinite}
+@keyframes shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+.dlg-cover .typo .tn{font-size:30px}
+.route-art .typo .tn,.col-feat .art .typo .tn{font-size:28px}
+.col-feat .art img.ph{filter:saturate(.92)}
+.col-feat .art::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(13,133,119,.62),rgba(25,183,165,.18));mix-blend-mode:multiply;pointer-events:none}
+.suggest-art{min-height:250px}
+
+/* сетка и карточка */
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 .card{background:var(--card);border:1.5px solid var(--line);border-radius:20px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-4px);box-shadow:var(--sh);border-color:var(--line2)}
-.cover{height:172px;position:relative;overflow:hidden}
-.cover svg,.cover img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
-.cover img{position:absolute;inset:0}
-.card:hover .cover svg,.card:hover .cover img{transform:scale(1.04)}
-.cover .cat{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);color:var(--ink);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:8px}
+.cover{height:180px}
+.card:hover img.ph{transform:scale(1.05)}
+.cover .cat{position:absolute;left:12px;top:12px;z-index:2;background:rgba(255,249,240,.94);border:1px solid var(--line);color:var(--ink);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:8px;backdrop-filter:blur(4px)}
 .card-b{padding:18px;display:flex;flex-direction:column;gap:10px;flex:1}
 .card-b .area{font-size:12px;font-weight:700;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
 .card-b h3{font-family:var(--serif);font-size:22px;font-weight:700;line-height:1.18}
@@ -25,14 +43,13 @@
 .empty{grid-column:1/-1;text-align:center;padding:56px 24px;border:1.5px dashed var(--line2);border-radius:20px;color:var(--ink2);background:var(--card)}
 .empty b{font-family:var(--serif);font-size:23px;display:block;margin-bottom:8px;color:var(--ink)}
 .fsort .fl{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:9px}
+.route-plate,.route-stamp{z-index:3}
 
 /* окна */
 dialog{border:none;border-radius:24px;padding:0;width:min(640px,100vw - 28px);background:var(--card);color:var(--ink);box-shadow:0 34px 90px rgba(23,43,77,.35);max-height:calc(100vh - 40px);overflow:auto}
 dialog::backdrop{background:rgba(23,43,77,.5);backdrop-filter:blur(3px)}
-.dlg-cover{height:220px;position:relative}
-.dlg-cover svg,.dlg-cover img{width:100%;height:100%;object-fit:cover}
-.dlg-cover img{position:absolute;inset:0}
-.dlg-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:var(--card);border:1.5px solid var(--line2);font-size:17px;display:grid;place-items:center;z-index:2}
+.dlg-cover{height:240px}
+.dlg-x{position:absolute;top:14px;right:14px;z-index:5;width:38px;height:38px;border-radius:50%;background:var(--card);border:1.5px solid var(--line2);font-size:17px;display:grid;place-items:center}
 .dlg-x:hover{border-color:var(--coral);color:var(--coral-deep)}
 .dlg-b{padding:24px 26px 26px}
 .dlg-b .cat{font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--teal-deep)}
@@ -65,12 +82,14 @@ textarea.field{min-height:104px;resize:vertical}
 .ok-panel h3{font-family:var(--serif);font-size:25px;margin-bottom:8px}
 .ok-panel p{color:var(--ink2);max-width:420px;margin:0 auto 18px}
 
-/* источники и остановки маршрута */
-.src-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:14px}
+/* источники и маршрут */
+.src-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:14px;max-height:46vh;overflow:auto;padding-right:4px}
 .src-list li{display:flex;gap:12px;align-items:flex-start;font-size:14px;border-bottom:1px dashed var(--line);padding-bottom:10px}
+.src-list .th{flex:none;width:62px;height:44px;object-fit:cover;border-radius:9px;border:1px solid var(--line)}
 .src-list .n{flex:none;width:26px;height:26px;border-radius:8px;background:var(--sky);color:var(--sky-deep);font-weight:800;font-size:12px;display:grid;place-items:center}
 .src-list b{display:block}
-.src-list span{color:var(--ink2);font-size:13px}
+.src-list span{color:var(--ink2);font-size:13px;display:block}
+.src-list a{font-size:12.5px;font-weight:700}
 .route-dlg-stops{list-style:none;display:flex;flex-direction:column;gap:12px;margin:16px 0}
 .route-dlg-stops li{display:flex;gap:12px;align-items:flex-start}
 .route-dlg-stops .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--sun);color:var(--ink);font-weight:900;font-size:13px;display:grid;place-items:center}
@@ -78,15 +97,13 @@ textarea.field{min-height:104px;resize:vertical}
 .route-dlg-stops span{font-size:13.5px;color:var(--ink2)}
 .route-dlg-stops a{font-size:13px;font-weight:700;white-space:nowrap}
 
-/* тост — поверх окон через popover, с обычным фолбэком */
+/* тост */
 .toast{position:fixed;left:50%;right:auto;top:auto;bottom:26px;margin:0;border:none;overflow:visible;width:max-content;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:13px 18px;border-radius:14px;font-weight:600;font-size:14.5px;display:flex;gap:14px;align-items:center;opacity:0;pointer-events:none;transition:.25s;z-index:90;box-shadow:0 18px 44px rgba(23,43,77,.4);max-width:min(540px,100vw - 28px)}
 .toast.show,.toast:popover-open{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 .toast button{color:var(--sun);font-weight:800;white-space:nowrap}
 
-/* ===== адаптив (загружается последним — все правила здесь) ===== */
-@media (min-width:1061px) and (max-width:1180px){
-  .grid{grid-template-columns:1fr}
-}
+/* ===== адаптив ===== */
+@media (min-width:1061px) and (max-width:1180px){.grid{grid-template-columns:1fr}}
 @media (max-width:1060px){
   .hero-grid{grid-template-columns:1fr;gap:34px}
   .route{max-width:560px}
@@ -94,9 +111,9 @@ textarea.field{min-height:104px;resize:vertical}
   .filters{position:static}
   .cols{grid-template-columns:repeat(2,1fr)}
   .col-feat{grid-template-columns:1fr}
-  .col-feat .art{min-height:170px}
+  .col-feat .art{min-height:190px}
   .suggest{grid-template-columns:1fr}
-  .suggest-art{max-height:220px}
+  .suggest-art{min-height:200px;max-height:230px}
 }
 @media (max-width:700px){
   :root{--nav:112px}
@@ -109,6 +126,7 @@ textarea.field{min-height:104px;resize:vertical}
   .search .btn{width:100%}
   .dlg-grid{grid-template-columns:1fr}
   .dlg-b,.dlg-form{padding:20px}
+  .dlg-cover{height:200px}
   .hero{padding-top:calc(var(--nav) + 30px)}
   .hero-sun{width:150px;height:150px;right:-30px}
   .ft .ver{text-align:left}
@@ -116,4 +134,5 @@ textarea.field{min-height:104px;resize:vertical}
   .sec{padding:44px 0}
   .filters{padding:16px;gap:14px}
   .toast{bottom:16px;font-size:14px;padding:12px 15px}
+  .cover{height:190px}
 }
