@@ -137,3 +137,10 @@ footer{border-top:2px solid var(--ink);padding:40px 0 54px;margin-top:0;backgrou
 .ft .sp{flex:1}
 .ft .ver{font-size:12px;color:var(--dim);text-align:right;line-height:1.6}
 .ft .ver b{display:block;color:var(--ink);font-family:var(--disp);font-size:13px;letter-spacing:-.01em}
+
+.city-sw{display:inline-flex;border:2px solid var(--ink);border-radius:8px;overflow:hidden;flex:none}
+.city-sw a{padding:7px 11px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;color:var(--ink);background:var(--paper)}
+.city-sw a+a{border-left:2px solid var(--ink)}
+.city-sw a.on{background:var(--ink);color:#fff}
+.city-sw a:hover:not(.on){background:var(--lime)}
+@media (max-width:700px){.city-sw a{padding:6px 9px;font-size:10px}}

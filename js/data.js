@@ -130,3 +130,10 @@ const colPred={
  late:p=>isLate(p)
 };
 const colApply={today:{},duo:{company:'two',mood:'quiet'},kidsrain:{company:'kids',weather:'in'},work:{tag:'work'},free:{budget:'free'},cheap:{budget:'500'},unusual:{mood:'unusual'},late:{}};
+
+const CITY={
+ slug:'nsk',name:'Новосибирск',editor:'Антон Маслаков',date:'19 ноября 2026',
+ center:[55.028,82.92],zoom:12,
+ hero:['Михайловская набережная','Бугринский мост'],city:['Новосибирск'],
+ wiki:{naberezhnaya:['Михайловская набережная'],zaeltsovsky:['Заельцовский парк'],bugrinskaya:['Бугринская роща'],narymsky:['Нарымский сквер'],centralpark:['Центральный парк (Новосибирск)'],novat:['Новосибирский театр оперы и балета'],fakel:['Красный факел (театр)'],zoo:['Новосибирский зоопарк'],kukolny:['Новосибирский областной театр кукол'],delfinia:['Дельфиния'],planetarium:['Новосибирский планетарий'],aquamir:['Аквамир'],gpntb:['Государственная публичная научно-техническая библиотека СО РАН'],aura:['Аура (торговый центр)'],tochka:['Академпарк']}
+};
