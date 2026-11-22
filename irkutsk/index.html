@@ -80,7 +80,7 @@ dialog::backdrop{background:rgba(6,20,17,.72);backdrop-filter:blur(4px)}
 @media (max-width:640px){.hero{padding:96px 0 40px}.steps{flex-direction:column;gap:12px}.step:not(:last-child)::after{display:none}.actions .btn{flex:1}dialog{width:100vw;height:100dvh;max-height:100dvh;border-radius:0}.dlg{max-height:100dvh;height:100dvh}.brand-img{height:26px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}.kicker,.city,.tagline,.status,.actions,.ready{opacity:1;transform:none}}
 </style>
-</head>
+<style>.cs-time{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:8px 14px;border:1px solid var(--line2);border-radius:999px;background:rgba(255,246,233,.06);color:var(--mut);font-size:13px;font-weight:600}.cs-time svg{width:15px;height:15px;stroke:var(--amber)}.cs-time b{color:var(--cream);font-weight:800;font-variant-numeric:tabular-nums}</style></head>
 <body>
 <canvas id="sky"></canvas>
 <div class="grain"></div>
@@ -90,7 +90,7 @@ dialog::backdrop{background:rgba(6,20,17,.72);backdrop-filter:blur(4px)}
 </div></header>
 <main class="wrap hero">
 <div class="kicker">Гид по городу · в работе</div>
-<h1 class="city">Иркутск</h1>
+<h1 class="city">Иркутск</h1><div class="cs-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><b>--:--</b><span>местное время</span></div>
 <p class="tagline">Байкал и деревянное зодчество</p>
 <div class="status">
 <div class="status-head">Мы ещё собираем этот город</div>
@@ -131,5 +131,12 @@ document.getElementById('allClose').addEventListener('click',function(){dlg.clos
 dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close();});
 search.addEventListener('input',function(){render(this.value);});})();
 </script>
-</body>
+<script>
+(function(){var el=document.querySelector('.cs-time');if(!el)return;var name="Иркутск";
+var rec=(window.M4_CITIES||[]).filter(function(c){return c.name===name})[0];if(!rec)return;
+function t(){var d=new Date();if(rec.tz){try{var p=new Intl.DateTimeFormat('ru-RU',{timeZone:rec.tz,hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(d);return p.filter(function(x){return x.type==='hour'})[0].value+':'+p.filter(function(x){return x.type==='minute'})[0].value;}catch(e){}}
+var u=new Date(d.getTime()+d.getTimezoneOffset()*60000+(rec.utc||3)*3600000);return ('0'+u.getHours()).slice(-2)+':'+('0'+u.getMinutes()).slice(-2);}
+function up(){el.querySelector('b').textContent=t();if(rec.prep)el.querySelector('span').textContent='в '+rec.prep;}
+up();setInterval(up,30000);})();
+</script></body>
 </html>

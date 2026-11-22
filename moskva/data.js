@@ -126,7 +126,7 @@ const ROUTE_STOPS=[
 ];
 const routeUrl='https://yandex.ru/maps/?rtext='+ROUTE_STOPS.map(s=>s.lat+','+s.lng).join('~')+'&rtt=pedestrian';
 
-const CITY={
+const CITY={tz:'Europe/Moscow',utc:3,
  slug:'msk',name:'Москва',editor:'Редакция Москвы',date:'20 ноября 2026',
  center:[55.7522,37.6156],zoom:11,
  hero:['Зарядье','Красная площадь'],city:['Москва'],

@@ -458,3 +458,71 @@ if(Photo.pending){
   start();
   document.addEventListener('visibilitychange',function(){document.hidden?stop():start();});
 })();
+
+/* ===== Небо города: солнце/луна по местному времени ===== */
+(function(){
+  if(window.__m4sky)return;window.__m4sky=1;
+  if(typeof CITY==='undefined'||!CITY.name)return;
+  var root=document.documentElement;
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hero=document.querySelector('.hero');
+  var sunEl=document.getElementById('heroSun');
+  if(!hero)return;
+  var tz=CITY.tz,utc=CITY.utc,prep=null;
+  var rec=(window.M4_CITIES||[]).filter(function(c){return c.name===CITY.name})[0];
+  if(rec){if(!tz)tz=rec.tz;if(utc==null)utc=rec.utc;prep=rec.prep;}
+  function now(){
+    var d=new Date();
+    if(tz){try{
+      var p=new Intl.DateTimeFormat('ru-RU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(d);
+      return {h:+p.filter(function(x){return x.type==='hour'})[0].value,m:+p.filter(function(x){return x.type==='minute'})[0].value};
+    }catch(e){}}
+    var u=new Date(d.getTime()+d.getTimezoneOffset()*60000+(utc==null?3:utc)*3600000);
+    return {h:u.getHours(),m:u.getMinutes()};
+  }
+  function phaseOf(h){return h>=5&&h<8?'dawn':h>=8&&h<18?'day':(h>=22||h<5)?'night':'dusk';}
+  var WORD={dawn:'рассвет',day:'день',dusk:'вечер',night:'ночь'};
+  var MODE={auto:'авто',day:'день',night:'ночь'};
+  var mode=store.get('m4.theme','auto');if(['auto','day','night'].indexOf(mode)<0)mode='auto';
+  var curPhase=null;
+  var stars=document.createElement('div');stars.className='sky-stars';stars.setAttribute('aria-hidden','true');
+  var sh='';for(var i=0;i<46;i++){var s=(1+Math.random()*1.6).toFixed(1);sh+='<i style="left:'+(Math.random()*100).toFixed(2)+'%;top:'+(Math.random()*72).toFixed(2)+'%;width:'+s+'px;height:'+s+'px;animation-duration:'+(2.2+Math.random()*3.4).toFixed(2)+'s;animation-delay:'+(Math.random()*4).toFixed(2)+'s"></i>';}
+  stars.innerHTML=sh;hero.insertBefore(stars,hero.firstChild);
+  var cl=document.createElement('div');cl.className='sky-clouds';cl.setAttribute('aria-hidden','true');cl.innerHTML='<i class="c1"></i><i class="c2"></i>';hero.insertBefore(cl,hero.firstChild);
+  var col=document.querySelector('.hero-grid > div');
+  var chip=document.createElement('button');chip.type='button';chip.className='city-time';chip.id='m4Time';
+  chip.title='Оформление подстраивается под время города. Нажми: авто → день → ночь.';
+  if(col)col.insertBefore(chip,col.firstChild);
+  var IC_SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5 5l1.7 1.7M17.3 17.3 19 19M19 5l-1.7 1.7M6.7 17.3 5 19"/></svg>';
+  var IC_MOON='<svg viewBox="0 0 24 24"><path d="M20 13.2A8.2 8.2 0 0 1 10.8 4 8.2 8.2 0 1 0 20 13.2Z"/></svg>';
+  function sunArt(){
+    var rays='';for(var a=0;a<360;a+=30){var r=a*Math.PI/180;rays+='<line x1="'+(100+70*Math.cos(r)).toFixed(1)+'" y1="'+(100+70*Math.sin(r)).toFixed(1)+'" x2="'+(100+85*Math.cos(r)).toFixed(1)+'" y2="'+(100+85*Math.sin(r)).toFixed(1)+'"/>';}
+    return '<svg class="sky-art" viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="m4sg" cx="38%" cy="34%" r="78%"><stop offset="0%" style="stop-color:var(--m4s1,#FFF3C4)"/><stop offset="55%" style="stop-color:var(--m4s2,#FFCF5E)"/><stop offset="100%" style="stop-color:var(--m4s3,#FFB63A)"/></radialGradient></defs><g class="rays" stroke="#FFC24D" stroke-width="5" stroke-linecap="round">'+rays+'</g><circle cx="100" cy="100" r="52" fill="url(#m4sg)"/><circle cx="100" cy="100" r="52" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.5"/></svg>';
+  }
+  function moonArt(){
+    return '<svg class="sky-art" viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="m4mg" cx="36%" cy="32%" r="80%"><stop offset="0%" stop-color="#FBF8EC"/><stop offset="70%" stop-color="#E8E4D4"/><stop offset="100%" stop-color="#CFCBBB"/></radialGradient></defs><circle cx="100" cy="100" r="50" fill="url(#m4mg)"/><circle cx="82" cy="86" r="9" fill="rgba(23,43,77,.10)"/><circle cx="118" cy="72" r="6" fill="rgba(23,43,77,.09)"/><circle cx="122" cy="112" r="11" fill="rgba(23,43,77,.11)"/><circle cx="90" cy="122" r="6" fill="rgba(23,43,77,.08)"/><circle cx="104" cy="98" r="4" fill="rgba(23,43,77,.07)"/><path d="M62 78 A50 50 0 0 1 100 50" stroke="rgba(255,255,255,.7)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>';
+  }
+  function paint(ph){
+    root.setAttribute('data-m4phase',ph);
+    if(sunEl){sunEl.className='hero-sun '+(ph==='night'?'is-moon':'is-sun');sunEl.innerHTML=ph==='night'?moonArt():sunArt();}
+    var imgs=document.querySelectorAll('.logo-img');
+    for(var i=0;i<imgs.length;i++){var s=imgs[i].getAttribute('src')||'';imgs[i].src=ph==='night'?s.replace(/logo(-night)?\.svg/,'logo-night.svg'):s.replace(/logo(-night)?\.svg/,'logo.svg');}
+    var t=now(),mm=(t.m<10?'0':'')+t.m;
+    chip.innerHTML=(ph==='night'?IC_MOON:IC_SUN)+'<b>'+t.h+':'+mm+'</b><span>'+(prep?'в '+prep:'местное время')+' · '+WORD[ph]+'</span><i>'+MODE[mode]+'</i>';
+  }
+  function apply(){
+    var t=now();
+    var ph=mode==='auto'?phaseOf(t.h):mode;
+    if(ph!==curPhase){curPhase=ph;paint(ph);}
+    else{var b=chip.querySelector('b');if(b)b.textContent=t.h+':'+((t.m<10?'0':'')+t.m);}
+  }
+  chip.addEventListener('click',function(){mode=mode==='auto'?'day':mode==='day'?'night':'auto';store.set('m4.theme',mode);curPhase=null;apply();});
+  apply();
+  setInterval(function(){if(!document.hidden)apply();},30000);
+  if(!reduce){setInterval(function(){
+    if(document.hidden||curPhase!=='night')return;
+    var s=document.createElement('i');s.className='shoot';
+    s.style.left=(10+Math.random()*55)+'%';s.style.top=(6+Math.random()*30)+'%';
+    hero.appendChild(s);setTimeout(function(){s.remove();},1400);
+  },13000);}
+})();

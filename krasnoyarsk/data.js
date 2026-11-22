@@ -102,7 +102,7 @@ const ROUTE_STOPS=[
 ];
 const routeUrl='https://yandex.ru/maps/?rtext='+ROUTE_STOPS.map(s=>s.lat+','+s.lng).join('~')+'&rtt=pedestrian';
 
-const CITY={
+const CITY={tz:'Asia/Krasnoyarsk',utc:7,
  slug:'krs',name:'Красноярск',editor:'Редакция Красноярска',date:'22 ноября 2026',
  center:[56.0050,92.8400],zoom:12,
  hero:['Красноярские Столбы','Часовня Параскевы Пятницы (Красноярск)'],city:['Красноярск'],

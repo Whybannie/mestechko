@@ -131,7 +131,7 @@ const colPred={
 };
 const colApply={today:{},duo:{company:'two',mood:'quiet'},kidsrain:{company:'kids',weather:'in'},work:{tag:'work'},free:{budget:'free'},cheap:{budget:'500'},unusual:{mood:'unusual'},late:{}};
 
-const CITY={
+const CITY={tz:'Asia/Novosibirsk',utc:7,
  slug:'nsk',name:'Новосибирск',editor:'Редакция Месте4ко',date:'19 ноября 2026',
  center:[55.028,82.92],zoom:12,
  hero:['Михайловская набережная','Бугринский мост'],city:['Новосибирск'],
