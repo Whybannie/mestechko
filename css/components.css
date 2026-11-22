@@ -290,3 +290,9 @@ textarea.field{min-height:100px;resize:vertical}
 .logo:hover .h4-shadow{animation:none;opacity:.8}
 @media (prefers-reduced-motion:reduce){.logo .h4-pin,.logo .h4-shadow,.logo:hover .h4-pin{animation:none}}
 @media (max-width:760px){.logo .four{width:1.45em;height:1.5em;vertical-align:-0.4em}}
+
+/* ===== Логотип: вордмарк Месте4ко ===== */
+.logo{display:inline-flex;align-items:center;font-size:0}
+.logo-img{height:34px;width:auto;display:block}
+@media (max-width:760px){.logo-img{height:27px}}
+@media (max-width:380px){.logo-img{height:24px}}
