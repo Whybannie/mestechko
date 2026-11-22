@@ -309,3 +309,6 @@ textarea.field{min-height:100px;resize:vertical}
 @media (max-width:380px){
   .hd .logo-img{height:21px;max-height:21px}
 }
+
+/* ===== Шапка всегда закреплена сверху ===== */
+.hd{position:fixed !important;top:0 !important;left:0 !important;right:0 !important;z-index:60 !important}

@@ -4,7 +4,7 @@ const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CK=(typeof CITY!=='undefined'&&CITY.slug)?('m4.'+CITY.slug):'m4';
-const EDITOR=(typeof CITY!=='undefined'&&CITY.editor)||'Антон Маслаков';
+const EDITOR=(typeof CITY!=='undefined'&&CITY.editor)||'Редакция Месте4ко';
 const ISSUE=(typeof CITY!=='undefined'&&CITY.date)||'19 ноября 2026';
 const S={q:'',tag:'all',company:'any',mood:'any',budget:'any',weather:'any',open:false,savedOnly:false,sort:'rec',col:null,
   saved:new Set(store.get(CK+'.saved',[])),reports:store.get(CK+'.reports',{})};

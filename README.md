@@ -18,7 +18,7 @@ CNAME             домен, НЕ УДАЛЯТЬ
 ~~~
 
 ## Кто что трогает
-- Антон — index.html, css/, js/app.js, js/data.js
+- Владелец — index.html, css/, js/app.js, js/data.js
 - Соавтор — только moskva/
 
 Движок читает конфиг CITY из данных города: название, центр карты, зум,
