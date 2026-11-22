@@ -1,15 +1,15 @@
 /* МОСКВА · файл соавтора. Правь только это. Схема полей — в moskva/README.md */
 const CAT={
- 'Погулять':{c:'#00BFA6',t:'#D8F5F0',dark:true},
- 'Поесть':{c:'#FFC400',t:'#FFF1C4',dark:true},
- 'Вдвоём':{c:'#FF1E7A',t:'#FFE0EC',dark:false},
- 'С детьми':{c:'#1633FF',t:'#E2E6FF',dark:false},
- 'Поработать':{c:'#7A3BFF',t:'#EBE2FF',dark:false},
- 'Необычное':{c:'#B8F000',t:'#F0FBC6',dark:true},
- 'Полезное':{c:'#FF3B21',t:'#FFE4DE',dark:true},
- 'Активно':{c:'#111A38',t:'#E4E7F0',dark:false},
- 'Местный маршрут':{c:'#FF3B21',t:'#FFE4DE',dark:true},
- 'Город':{c:'#1633FF',t:'#E2E6FF',dark:false}
+ 'Погулять':{c:'#19B7A5',t:'#E3F4F1',dark:true},
+ 'Поесть':{c:'#E8A33D',t:'#FDF0DA',dark:true},
+ 'Вдвоём':{c:'#D9578F',t:'#FBE7EF',dark:true},
+ 'С детьми':{c:'#3D6BD6',t:'#E9EEF9',dark:false},
+ 'Поработать':{c:'#6B5AB8',t:'#EEEAF8',dark:false},
+ 'Необычное':{c:'#6E9B3E',t:'#EDF4E2',dark:true},
+ 'Полезное':{c:'#FF6B5E',t:'#FFE9E5',dark:true},
+ 'Активно':{c:'#172B4D',t:'#E7EAF1',dark:false},
+ 'Местный маршрут':{c:'#FF6B5E',t:'#FFE9E5',dark:true},
+ 'Город':{c:'#3D6BD6',t:'#E9EEF9',dark:false}
 };
 const COMPANY={two:'Вдвоём',friends:'С друзьями',kids:'С детьми',solo:'Один / одна'};
 const MOOD={quiet:'Без суеты',unusual:'Необычное',active:'Подвигаться'};
