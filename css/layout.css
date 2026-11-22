@@ -138,3 +138,19 @@ footer{border-top:1px solid var(--line);padding:38px 0 52px;background:var(--pap
 .ft .sp{flex:1}
 .ft .ver{font-size:12px;color:var(--dim);text-align:right;line-height:1.7}
 .ft .ver b{display:block;color:var(--ink2);font-size:13px}
+
+/* ===== Выбор города ===== */
+.city-sw{display:flex;align-items:center}
+.city-pick{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid var(--line2,rgba(23,43,77,.24));border-radius:999px;background:var(--card,#fff);font-weight:600;font-size:13.5px;color:var(--ink,#172B4D);transition:.15s;white-space:nowrap;cursor:pointer}
+.city-pick svg{width:16px;height:16px;stroke:var(--teal,#19B7A5);flex:none}
+.city-pick .cp-label{color:var(--dim,#8A97AD);font-weight:500}
+.city-pick b{color:var(--ink,#172B4D);font-weight:700}
+.city-pick:hover{border-color:var(--teal,#19B7A5);background:var(--teal-t,#E3F4F1)}
+.city-list{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.city-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px 16px;border:1px solid var(--line2,rgba(23,43,77,.24));border-radius:12px;background:var(--paper,#FFF9F0);font-size:15px;font-weight:600;color:var(--ink,#172B4D);transition:.15s;text-align:left;cursor:pointer}
+.city-row:hover{border-color:var(--teal,#19B7A5);background:var(--teal-t,#E3F4F1)}
+.city-row.cur{background:var(--teal-t,#E3F4F1);border-color:var(--teal,#19B7A5);cursor:default}
+.cr-name{font-weight:700}
+.cr-badge{font-size:11px;font-weight:700;color:var(--teal-ink,#0E8577);background:#fff;padding:4px 10px;border-radius:999px;border:1px solid var(--teal,#19B7A5)}
+.cr-go{color:var(--teal-ink,#0E8577);font-weight:600;font-size:13px}
+@media (max-width:700px){.city-pick .cp-label{display:none}}

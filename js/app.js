@@ -355,3 +355,78 @@ if(Photo.pending){
   resolvePhotos().then(d=>{applyPhotos(d);Photo.pending=false;store.set(CK+'.ph.v2',{at:Date.now(),data});renderCols();paintArt();render();if($('#sourcesDlg').open)renderSources()})
   .catch(()=>{Photo.pending=false;renderCols();paintArt();render()});
 }
+
+/* ===== Выбор города ===== */
+(function(){
+  if(typeof CITY==='undefined'||!CITY.name)return;
+  var CITIES=[
+    {name:'Новосибирск',folder:''},
+    {name:'Москва',folder:'moskva'},
+    {name:'Красноярск',folder:'krasnoyarsk'}
+  ];
+  var cur=CITIES.filter(function(c){return c.name===CITY.name})[0]||CITIES[0];
+  function href(t){
+    var cf=cur.folder,tf=t.folder;
+    if(tf===cf)return null;
+    if(cf==='')return tf?tf+'/':'./';
+    return tf?'../'+tf+'/':'../';
+  }
+  function ensureDlg(){
+    var d=document.getElementById('cityDlg');
+    if(d)return d;
+    d=document.createElement('dialog');
+    d.id='cityDlg';
+    d.innerHTML='<div class="dlg-form"><h3>Ваш город</h3><p class="lead">Выберите город: подборки, места и карта зависят от него.</p><div class="city-list" id="cityList"></div><div class="form-row"><button class="btn btn-line" type="button" id="cityClose">Закрыть</button></div></div>';
+    document.body.appendChild(d);
+    d.querySelector('#cityClose').addEventListener('click',function(){d.close()});
+    d.addEventListener('click',function(e){if(e.target===d)d.close()});
+    d.addEventListener('close',function(){if(!document.querySelector('dialog[open]'))document.body.classList.remove('lock')});
+    return d;
+  }
+  function openList(){
+    var d=ensureDlg();
+    var list=d.querySelector('#cityList');
+    list.innerHTML=CITIES.map(function(t){
+      if(t.name===CITY.name)return '<div class="city-row cur"><span class="cr-name">'+t.name+'</span><span class="cr-badge">вы здесь</span></div>';
+      return '<button class="city-row" type="button" data-city="'+t.name+'"><span class="cr-name">'+t.name+'</span><span class="cr-go">перейти →</span></button>';
+    }).join('');
+    var btns=list.querySelectorAll('[data-city]');
+    for(var i=0;i<btns.length;i++){
+      btns[i].addEventListener('click',function(){
+        var nm=this.getAttribute('data-city');
+        store.set('m4.city',nm);
+        var t=CITIES.filter(function(c){return c.name===nm})[0];
+        var h=href(t);
+        if(h)location.href=h;
+      });
+    }
+    d.showModal();
+    document.body.classList.add('lock');
+  }
+  var sw=document.querySelector('.city-sw');
+  if(sw){
+    sw.innerHTML='';
+    var b=document.createElement('button');
+    b.className='city-pick';b.type='button';
+    b.innerHTML='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10z"/><circle cx="10" cy="8" r="2"/></svg><span class="cp-label">Ваш город</span><b>'+CITY.name+'</b>';
+    b.addEventListener('click',openList);
+    sw.appendChild(b);
+  }
+  var saved=store.get('m4.city',null);
+  if(!saved){
+    setTimeout(function(){
+      var d=document.getElementById('cityConfirm');
+      if(!d){
+        d=document.createElement('dialog');
+        d.id='cityConfirm';
+        d.innerHTML='<div class="dlg-form"><h3>Ваш город — '+CITY.name+'?</h3><p class="lead">Мы покажем места, подборки и карту для этого города.</p><div class="form-row"><button class="btn btn-line" type="button" id="ccOther">Выбрать город</button><button class="btn btn-red" type="button" id="ccYes">Да, верно</button></div></div>';
+        document.body.appendChild(d);
+        d.querySelector('#ccYes').addEventListener('click',function(){store.set('m4.city',CITY.name);d.close()});
+        d.querySelector('#ccOther').addEventListener('click',function(){store.set('m4.city',CITY.name);d.close();openList()});
+        d.addEventListener('close',function(){if(!document.querySelector('dialog[open]'))document.body.classList.remove('lock')});
+      }
+      d.showModal();
+      document.body.classList.add('lock');
+    },600);
+  }
+})();
