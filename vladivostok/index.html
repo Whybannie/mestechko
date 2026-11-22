@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B211D">
+<title>Владивосток — скоро · Месте4ко</title>
+<meta name="description" content="Гид по городу Владивосток в работе. Месте4ко — места, куда хочется пойти.">
+<link rel="icon" href="../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Golos+Text:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--coral:#F26B4F;--teal:#35D0B0;--amber:#FFC857;--g2:#1C4A42;--cream:#FFF6E9;--mut:rgba(255,246,233,.66);--dim:rgba(255,246,233,.42);--line:rgba(255,246,233,.14);--line2:rgba(255,246,233,.26);--disp:'Lora',Georgia,serif;--sans:'Golos Text',system-ui,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--cream);min-height:100vh;overflow-x:hidden;position:relative;background:radial-gradient(1200px 700px at 82% -12%,#1C4A42,transparent 60%),radial-gradient(900px 600px at -5% 105%,#12332E,transparent 55%),linear-gradient(160deg,#0E2A25,#0B211D)}
+#sky{position:fixed;inset:0;z-index:0;pointer-events:none}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{position:relative;z-index:2;width:min(1100px,100% - 40px);margin-inline:auto}
+.top{position:fixed;top:0;left:0;right:0;z-index:20;background:rgba(11,33,29,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;justify-content:space-between;height:66px}
+.brand-img{height:30px;width:auto;display:block}
+.all-btn{padding:9px 16px;border:1px solid var(--line2);border-radius:999px;background:rgba(255,246,233,.06);color:var(--cream);font-weight:700;font-size:13.5px;cursor:pointer;transition:.15s}
+.all-btn:hover{background:var(--coral);border-color:var(--coral);color:#2A0E08}
+.hero{padding:120px 0 60px;min-height:calc(100vh - 90px);display:flex;flex-direction:column;justify-content:center}
+.kicker{display:inline-flex;align-items:center;gap:9px;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.kicker::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--coral);animation:beacon 1.8s infinite}
+.city{font-family:var(--disp);font-weight:700;font-size:clamp(44px,9vw,104px);line-height:1.02;letter-spacing:-.02em;margin:12px 0 8px;overflow-wrap:break-word}
+.tagline{color:var(--teal);font-size:clamp(17px,2.4vw,22px);font-weight:600}
+.status{margin-top:28px;background:rgba(255,246,233,.05);border:1px solid var(--line);border-radius:20px;padding:26px 28px;max-width:640px;backdrop-filter:blur(6px)}
+.status-head{font-family:var(--disp);font-size:24px;font-weight:600;margin-bottom:10px}
+.status-copy{color:var(--mut);line-height:1.6;font-size:15.5px}
+.steps{list-style:none;display:flex;margin-top:22px;flex-wrap:wrap;gap:6px 0}
+.step{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--dim);font-weight:600;position:relative;padding-right:30px}
+.step:not(:last-child)::after{content:"";position:absolute;right:11px;top:50%;width:12px;height:2px;background:var(--line2)}
+.step i{width:12px;height:12px;border-radius:50%;background:var(--line2);flex:none}
+.step.on{color:var(--cream)}
+.step.on i{background:var(--coral);animation:beacon 1.8s infinite}
+@keyframes beacon{0%{box-shadow:0 0 0 0 rgba(242,107,79,.55)}70%{box-shadow:0 0 0 12px rgba(242,107,79,0)}100%{box-shadow:0 0 0 0 rgba(242,107,79,0)}}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;border-radius:13px;padding:14px 24px;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:.16s;font-family:var(--sans)}
+.btn-coral{background:var(--coral);color:#2A0E08}
+.btn-coral:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(242,107,79,.35)}
+.btn-ghost{border-color:var(--line2);color:var(--cream);background:rgba(255,246,233,.05)}
+.btn-ghost:hover{border-color:var(--cream)}
+.ready{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:26px;font-size:14px}
+.ready-l{color:var(--dim);font-weight:600}
+.ready a{color:var(--cream);text-decoration:none;font-weight:700;padding:7px 14px;border:1px solid var(--line2);border-radius:999px;transition:.15s}
+.ready a:hover{background:var(--teal);color:#06231E;border-color:var(--teal)}
+.foot{padding:30px 0 40px;color:var(--dim);font-size:13px}
+dialog{border:none;border-radius:22px;padding:0;width:min(680px,100vw - 28px);background:#0E2A25;color:var(--cream);box-shadow:0 30px 80px rgba(0,0,0,.5);max-height:calc(100vh - 40px);overflow:hidden;border:1px solid var(--line2)}
+dialog::backdrop{background:rgba(6,20,17,.72);backdrop-filter:blur(4px)}
+.dlg{padding:24px 26px;display:flex;flex-direction:column;max-height:calc(100vh - 40px)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.dlg-head h2{font-family:var(--disp);font-size:26px;font-weight:600}
+.x{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);background:rgba(255,246,233,.06);color:var(--cream);font-size:16px;cursor:pointer}
+.x:hover{background:var(--coral);color:#2A0E08}
+.dlg-lead{color:var(--mut);font-size:14px;margin-bottom:14px;line-height:1.5}
+.search{width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--line2);background:rgba(255,246,233,.06);color:var(--cream);font-size:15px;outline:none;margin-bottom:14px;font-family:var(--sans)}
+.search:focus{border-color:var(--teal)}
+.search::placeholder{color:var(--dim)}
+.grid{overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--g2) rgba(255,246,233,.05)}
+.grid::-webkit-scrollbar{width:10px}
+.grid::-webkit-scrollbar-track{background:rgba(255,246,233,.05);border-radius:8px}
+.grid::-webkit-scrollbar-thumb{background:var(--g2);border-radius:8px;border:2px solid #0E2A25}
+.grid::-webkit-scrollbar-thumb:hover{background:var(--coral)}
+.crow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border:1px solid var(--line);border-radius:12px;background:rgba(255,246,233,.04);color:var(--cream);text-decoration:none;font-weight:600;font-size:15px;cursor:pointer;transition:.14s;text-align:left;width:100%}
+.crow:hover{border-color:var(--teal);background:rgba(53,208,176,.1)}
+.crow.cur{border-color:var(--coral);background:rgba(242,107,79,.12);cursor:default}
+.crow .nm{display:flex;flex-direction:column;gap:2px}
+.crow .rg{font-size:11.5px;color:var(--dim);font-weight:500}
+.badge{font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;flex:none}
+.badge.ready{background:rgba(53,208,176,.18);color:var(--teal)}
+.badge.soon{background:rgba(255,200,87,.16);color:var(--amber)}
+.badge.here{background:var(--coral);color:#2A0E08}
+.kicker,.city,.tagline,.status,.actions,.ready{opacity:0;transform:translateY(16px);animation:rise .7s cubic-bezier(.2,.7,.3,1) forwards}
+.city{animation-delay:.08s}.tagline{animation-delay:.16s}.status{animation-delay:.24s}.actions{animation-delay:.34s}.ready{animation-delay:.44s}
+@keyframes rise{to{opacity:1;transform:none}}
+@media (max-width:640px){.hero{padding:96px 0 40px}.steps{flex-direction:column;gap:12px}.step:not(:last-child)::after{display:none}.actions .btn{flex:1}dialog{width:100vw;height:100dvh;max-height:100dvh;border-radius:0}.dlg{max-height:100dvh;height:100dvh}.brand-img{height:26px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}.kicker,.city,.tagline,.status,.actions,.ready{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div class="grain"></div>
+<header class="top"><div class="wrap top-in">
+<a href="../" aria-label="Месте4ко — на главную"><img src="../logo.svg" alt="Месте4ко" class="brand-img"></a>
+<button class="all-btn" id="allBtn" type="button">Все города</button>
+</div></header>
+<main class="wrap hero">
+<div class="kicker">Гид по городу · в работе</div>
+<h1 class="city">Владивосток</h1>
+<p class="tagline">Мосты, море и сопки</p>
+<div class="status">
+<div class="status-head">Мы ещё собираем этот город</div>
+<p class="status-copy">Каждое место проверяем сами — цены, график и один честный минус. Чтобы гид получился настоящим, нужно время. Владивосток в очереди, скоро откроем.</p>
+<ol class="steps"><li class="step on"><i></i>Собираем места</li><li class="step"><i></i>Проверяем ногами</li><li class="step"><i></i>Публикуем гид</li></ol>
+</div>
+<div class="actions"><a class="btn btn-coral" href="../">Открыть Новосибирск</a><button class="btn btn-ghost" id="allBtn2" type="button">Все 30 городов</button></div>
+<div class="ready"><span class="ready-l">Уже готово:</span><a href="../">Новосибирск</a><a href="../moskva/">Москва</a><a href="../krasnoyarsk/">Красноярск</a></div>
+</main>
+<footer class="wrap foot">Месте4ко · найдём место для себя · Дальний Восток</footer>
+<dialog id="allDlg"><div class="dlg">
+<div class="dlg-head"><h2>Выберите город</h2><button class="x" id="allClose" type="button" aria-label="Закрыть">✕</button></div>
+<p class="dlg-lead">Гид готов для трёх городов. Остальные собираем — откройте любой, чтобы увидеть статус.</p>
+<input class="search" id="allSearch" type="search" placeholder="Найти город…" autocomplete="off">
+<div class="grid" id="allGrid"></div>
+</div></dialog>
+<script src="../js/cities.js"></script>
+<script>
+(function(){var cv=document.getElementById('sky');if(!cv)return;var ctx=cv.getContext('2d');if(!ctx)return;
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;var W,H,DPR,nodes=[],raf;
+var colors=['#F26B4F','#35D0B0','#FFC857'];
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
+function init(){nodes=[];var n=Math.max(10,Math.min(20,Math.round(W*H/45000)));for(var i=0;i<n;i++){nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:2+Math.random()*2.5,c:colors[i%colors.length],ph:Math.random()*6.28});}}
+function frame(t){ctx.clearRect(0,0,W,H);for(var i=0;i<nodes.length;i++){for(var j=i+1;j<nodes.length;j++){var a=nodes[i],b=nodes[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);if(d<150){ctx.strokeStyle='rgba(255,246,233,'+(0.10*(1-d/150))+')';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}}
+for(var k=0;k<nodes.length;k++){var p=nodes[k];if(!reduce){p.x+=p.vx;p.y+=p.vy;if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;}var pulse=reduce?1:(0.7+0.3*Math.sin(t/900+p.ph));var g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*6);g.addColorStop(0,p.c);g.addColorStop(1,'rgba(0,0,0,0)');ctx.globalAlpha=0.5*pulse;ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.r*6,0,6.28);ctx.fill();ctx.globalAlpha=1;ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill();ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.arc(p.x-p.r*.3,p.y-p.r*.3,p.r*.35,0,6.28);ctx.fill();}
+if(!reduce)raf=requestAnimationFrame(frame);}
+function start(){resize();init();cancelAnimationFrame(raf);if(reduce){frame(0);}else{raf=requestAnimationFrame(frame);}}
+start();var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(start,200);});})();
+(function(){var CITIES=window.M4_CITIES||[];var CUR='Владивосток';
+function navHref(f){return f?'../'+f+'/':'../';}
+var dlg=document.getElementById('allDlg'),grid=document.getElementById('allGrid'),search=document.getElementById('allSearch');
+function render(q){q=(q||'').trim().toLowerCase();var items=CITIES.filter(function(t){return !q||t.name.toLowerCase().indexOf(q)>=0;});if(!items.length){grid.innerHTML='<div style="padding:20px;text-align:center;color:var(--dim)">Ничего не нашлось</div>';return;}
+grid.innerHTML=items.map(function(t){var here=t.name===CUR;var badge=here?'<span class="badge here">вы здесь</span>':(t.ready?'<span class="badge ready">готово</span>':'<span class="badge soon">скоро</span>');var inner='<span class="nm">'+t.name+'<span class="rg">'+(t.region||'')+'</span></span>'+badge;return here?'<div class="crow cur">'+inner+'</div>':'<a class="crow" href="'+navHref(t.folder)+'">'+inner+'</a>';}).join('');}
+function open(){render('');search.value='';dlg.showModal();setTimeout(function(){search.focus();},60);}
+document.getElementById('allBtn').addEventListener('click',open);
+document.getElementById('allBtn2').addEventListener('click',open);
+document.getElementById('allClose').addEventListener('click',function(){dlg.close();});
+dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close();});
+search.addEventListener('input',function(){render(this.value);});})();
+</script>
+</body>
+</html>
