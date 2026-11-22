@@ -36,8 +36,7 @@
     </nav>
     <div class="sp"></div>
     <div class="city-sw" role="group" aria-label="Город"><a class="on" href="./" title="Новосибирск">НСК</a><span class="soon" title="Москва в работе — откроется, когда наберём места">МСК</span></div>
-    <button class="saved-btn" id="savedBtn" type="button" aria-pressed="false">♥ Сохранённое <b id="savedCount">0</b></button>
-  </div>
+    </div>
 </header>
 
 <main id="main">
@@ -116,6 +115,7 @@
             <button type="button" data-val="any" class="on">Неважно</button><button type="button" data-val="in">Под крышей</button><button type="button" data-val="out">На улице</button>
           </div></div>
           <button class="fswitch" id="openTgl" type="button" aria-pressed="false">Открыто сейчас <span class="sw"></span></button>
+          <button class="fswitch" id="savedTgl" type="button" aria-pressed="false">Только сохранённые <span class="sw"></span></button>
           <div class="fsort"><div class="fl">Порядок</div>
             <select id="sortSel" aria-label="Порядок">
               <option value="rec">Выбор редакции</option><option value="cheap">Сначала дешевле</option>
@@ -261,5 +261,6 @@
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" popover="manual"><span id="toastText"></span><button id="toastAct" type="button" hidden></button></div>
+<button id="savedBtn" type="button" hidden aria-pressed="false"><b id="savedCount">0</b></button>
 </body>
 </html>

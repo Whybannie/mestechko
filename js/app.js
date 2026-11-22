@@ -146,7 +146,7 @@ function render(){
   else bn.classList.remove('show');
   $$('.seg').forEach(g=>{const k=g.dataset.group;$$('button',g).forEach(b=>b.classList.toggle('on',b.dataset.val===String(S[k])))});
   $('#openTgl').classList.toggle('on',S.open);$('#openTgl').setAttribute('aria-pressed',String(S.open));
-  $('#savedBtn').classList.toggle('on',S.savedOnly);$('#savedBtn').setAttribute('aria-pressed',String(S.savedOnly));
+  $('#savedBtn').classList.toggle('on',S.savedOnly);$('#savedBtn').setAttribute('aria-pressed',String(S.savedOnly));var _st=document.getElementById('savedTgl');if(_st){_st.classList.toggle('on',S.savedOnly);_st.setAttribute('aria-pressed',String(S.savedOnly));}
   $('#sortSel').value=S.sort;
   $$('#chips .chip').forEach(b=>{const k=b.dataset.chip;
     const on=(k==='open'&&S.open)||(k==='warm'&&S.weather==='in')||(k==='free'&&S.budget==='free')||(k==='kids'&&S.company==='kids')||(k==='two'&&S.company==='two')||(['eat','walk','work'].includes(k)&&S.tag===k);
@@ -174,7 +174,7 @@ function renderSources(){
   const shot=PLACES.filter(p=>p.photo).length;
   $('#srcLead').textContent='Снимки из Wikipedia и Wikimedia Commons, свободные лицензии. Найдено '+shot+' из '+PLACES.length+' мест. Остальные снимем сами.';
   $('#srcList').innerHTML=PLACES.map((p,i)=>p.photo&&p.credit?
-    `<li><img class="th" src="${p.photo}" alt="" loading="lazy" onerror="this.remove()"><div><b>${p.name}</b><span>${p.credit.author} · ${p.credit.license}</span><a href="${p.credit.page}" target="_blank" rel="noopener">Источник</a></div></li>`:
+    `<li><img class="th" src="${p.photo}" alt="" loading="lazy" onerror="this.remove()"><div><b>${p.name}</b><span>${p.credit.author} · ${p.credit.license}${p.credit.note?' · '+p.credit.note:''}</span><a href="${p.credit.page}" target="_blank" rel="noopener">Источник</a></div></li>`:
     `<li><span class="n">${i+1}</span><div><b>${p.name}</b><span>Фото ещё нет</span></div></li>`).join('');
 }
 function saveState(){store.set(CK+'.saved',[...S.saved]);store.set(CK+'.reports',S.reports);$('#savedCount').textContent=S.saved.size}
@@ -352,7 +352,7 @@ const cached=store.get(CK+'.ph.v2',null);
 if(cached&&cached.at&&Date.now()-cached.at<6048e5){applyPhotos(cached.data);Photo.pending=false}
 renderChips();renderCols();paintArt();saveState();render();observeRv();initMap();
 if(Photo.pending){
-  resolvePhotos().then(d=>{applyPhotos(d);Photo.pending=false;store.set(CK+'.ph.v2',{at:Date.now(),data});renderCols();paintArt();render();if($('#sourcesDlg').open)renderSources()})
+  resolvePhotos().then(async d=>{try{if(window.__m4Fill)await window.__m4Fill(d)}catch(e){}applyPhotos(d);Photo.pending=false;store.set(CK+'.ph.v2',{at:Date.now(),data});renderCols();paintArt();render();if($('#sourcesDlg').open)renderSources()})
   .catch(()=>{Photo.pending=false;renderCols();paintArt();render()});
 }
 
@@ -525,4 +525,88 @@ if(Photo.pending){
     s.style.left=(10+Math.random()*55)+'%';s.style.top=(6+Math.random()*30)+'%';
     hero.appendChild(s);setTimeout(function(){s.remove();},1400);
   },13000);}
+})();
+
+/* ===== Дозаполнение фото: поиск в Wikimedia Commons ===== */
+(function(){
+  if(window.__m4Fill)return;
+  var BUDGET=44,used=0;
+  var CATQ={'Погулять':'city park alley trees','Поесть':'restaurant food table','Вдвоём':'theatre auditorium','С детьми':'children museum interactive','Поработать':'library reading room','Необычное':'science museum exhibit','Полезное':'grocery store shelves','Активно':'outdoor workout bars'};
+  function clean(v){try{return stripHtml(v)}catch(e){return String(v||'').replace(/<[^>]*>/g,'').trim()}}
+  async function csearch(q){
+    if(used>=BUDGET)return [];
+    used++;
+    var ctl=new AbortController(),t=setTimeout(function(){ctl.abort()},9000);
+    try{
+      var u='https://commons.wikimedia.org/w/api.php?'+new URLSearchParams({action:'query',generator:'search',gsrsearch:q,gsrnamespace:'6',gsrlimit:'8',prop:'imageinfo',iiprop:'url|extmetadata|mime|size',iiurlwidth:'1000',format:'json',formatversion:'2',origin:'*'});
+      var r=await fetch(u,{signal:ctl.signal});
+      if(!r.ok)return [];
+      var j=await r.json();
+      return ((j.query||{}).pages)||[];
+    }catch(e){return []}finally{clearTimeout(t)}
+  }
+  function cand(pg){
+    var ii=(pg.imageinfo||[])[0];
+    if(!ii||!ii.thumburl)return null;
+    var mime=ii.mime||'';
+    if(mime.indexOf('image/')!==0||/svg/i.test(mime))return null;
+    var title=pg.title||'';
+    if(/\.svg$/i.test(title))return null;
+    if(/(map|plan|logo|coat of arms|diagram|chart|icon|flag|stamp|scheme|locator|blank|portrait of|monument to)/i.test(title))return null;
+    var w=ii.thumbwidth||ii.width||0,h=ii.thumbheight||ii.height||0;
+    if(w<600||h<380)return null;
+    var em=ii.extmetadata||{};
+    var lic=clean(em.LicenseShortName&&em.LicenseShortName.value);
+    if(/non-free|fair use/i.test(lic))return null;
+    var ratio=w/h, score=w;
+    if(ratio>=1.25&&ratio<=2.1)score+=900;
+    if(ratio<1)score-=800;
+    if(/jpeg|jpg/i.test(mime))score+=150;
+    return {score:score,photo:ii.thumburl,credit:{
+      author:clean(em.Artist&&em.Artist.value)||'автор не указан',
+      license:lic||'свободная лицензия',
+      page:ii.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(title))
+    }};
+  }
+  function pick(pages){
+    var best=null;
+    for(var i=0;i<pages.length;i++){
+      var c=cand(pages[i]);
+      if(c&&(!best||c.score>best.score))best=c;
+    }
+    if(best)delete best.score;
+    return best;
+  }
+  async function one(p,out){
+    var NAME=(typeof PHOTO_NAME!=='undefined')?PHOTO_NAME:{};
+    var TYPE=(typeof PHOTO_TYPE!=='undefined')?PHOTO_TYPE:{};
+    var cityName=(typeof CITY!=='undefined'&&CITY.name)?CITY.name:'';
+    var tries=[{q:p.name+' '+cityName,real:true}];
+    (NAME[p.id]||[]).forEach(function(q){tries.push({q:q,real:true})});
+    tries.push({q:TYPE[p.id]||CATQ[p.cat]||p.cat,real:false});
+    for(var i=0;i<tries.length;i++){
+      if(used>=BUDGET)return;
+      var hit=pick(await csearch(tries[i].q));
+      if(hit){
+        if(!tries[i].real)hit.credit.note='иллюстрация';
+        out[p.id]=hit;
+        return;
+      }
+    }
+  }
+  window.__m4Fill=async function(d){
+    if(!d||!d.places||typeof PLACES==='undefined')return;
+    var missing=PLACES.filter(function(p){return !d.places[p.id]});
+    if(!missing.length)return;
+    for(var i=0;i<missing.length;i+=4){
+      if(used>=BUDGET)break;
+      await Promise.all(missing.slice(i,i+4).map(function(p){return one(p,d.places)}));
+    }
+  };
+})();
+
+/* ===== Фильтр «Только сохранённые» ===== */
+(function(){
+  var st=document.getElementById('savedTgl'),sb=document.getElementById('savedBtn');
+  if(st&&sb)st.addEventListener('click',function(){sb.click();});
 })();

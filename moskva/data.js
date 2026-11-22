@@ -132,3 +132,22 @@ const CITY={tz:'Europe/Moscow',utc:3,
  hero:['Зарядье','Красная площадь'],city:['Москва'],
  wiki:{gorky:['Парк Горького (Москва)'],zaryadye:['Зарядье'],redsquare:['Красная площадь'],vdnh:['ВДНХ'],tretyakov:['Третьяковская галерея'],bolshoi:['Большой театр'],zoo:['Московский зоопарк'],patriki:['Патриаршие пруды'],nekrasovka:['Библиотека имени Некрасова'],danilovsky:['Даниловский рынок'],kolomenskoe:['Коломенское'],tsaritsyno:['Царицыно (музей-заповедник)'],sokolniki:['Сокольники (парк)'],izmailovo:['Измайлово (природно-исторический парк)'],muzeon:['Музеон (парк)'],vorobyovy:['Воробьёвы горы'],pobedy:['Парк Победы (Москва)'],aptekarsky:['Аптекарский огород'],depo:['Депо.Москва'],usachevsky:['Усачёва улица'],dorogomilovsky:['Дорогомиловский рынок'],stolovaya57:['ГУМ'],pushkin:['Кафе Пушкинъ']}
 };
+
+const PHOTO_NAME={
+ nekrasovka:['Nekrasov library Moscow','Библиотека имени Некрасова'],
+ patriki:['Patriarch Ponds Moscow','Патриаршие пруды'],
+ danilovsky:['Danilovsky market Moscow','Даниловский рынок']
+};
+const PHOTO_TYPE={
+ nekrasovka:'modern library reading room',
+ danilovsky:'food market hall stalls',
+ pechki:'restaurant table dinner',
+ tretyakov:'art gallery painting hall',
+ bolshoi:'theatre auditorium red velvet',
+ zoo:'giant panda enclosure',
+ gorky:'city park embankment summer',
+ zaryadye:'park floating bridge city',
+ redsquare:'Saint Basil Cathedral square',
+ vdnh:'fountain pavilion exhibition',
+ patriki:'pond park benches city'
+};

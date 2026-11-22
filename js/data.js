@@ -137,3 +137,35 @@ const CITY={tz:'Asia/Novosibirsk',utc:7,
  hero:['Михайловская набережная','Бугринский мост'],city:['Новосибирск'],
  wiki:{naberezhnaya:['Михайловская набережная'],zaeltsovsky:['Заельцовский парк'],bugrinskaya:['Бугринская роща'],narymsky:['Нарымский сквер'],centralpark:['Центральный парк (Новосибирск)'],novat:['Новосибирский театр оперы и балета'],fakel:['Красный факел (театр)'],zoo:['Новосибирский зоопарк'],kukolny:['Новосибирский областной театр кукол'],delfinia:['Дельфиния'],planetarium:['Новосибирский планетарий'],aquamir:['Аквамир'],gpntb:['Государственная публичная научно-техническая библиотека СО РАН'],aura:['Аура (торговый центр)'],tochka:['Академпарк']}
 };
+
+/* Поиск фото в Commons: NAME — варианты названия места (реальные снимки),
+   TYPE — тематический запрос (помечается как иллюстрация) */
+const PHOTO_NAME={
+ narymsky:['Narymsky square Novosibirsk','Нарымский сквер'],
+ lenta:['Lenta hypermarket','Lenta supermarket Russia'],
+ aquamir:['Akvamir Novosibirsk','Аквамир Новосибирск'],
+ aura:['Aura Novosibirsk shopping mall'],
+ delfinia:['Novosibirsk dolphinarium','Дельфиния'],
+ galileo:['Galileo science park Novosibirsk'],
+ tochka:['Akadempark Novosibirsk','Точка кипения Новосибирск'],
+ gpntb:['GPNTB Novosibirsk library','ГПНТБ СО РАН']
+};
+const PHOTO_TYPE={
+ pechki:'pelmeni russian dumplings plate',
+ travelers:'latte art coffee cup cafe',
+ academy:'espresso cup cafe table',
+ dyadya:'doner kebab wrap',
+ vilka:'borscht soup bowl sour cream',
+ kulikovsky:'patisserie cake display case',
+ lenta:'supermarket shelves interior',
+ pharmacy:'pharmacy interior shelves',
+ dari:'clothing donation box charity',
+ workout:'outdoor calisthenics pull-up bars',
+ galileo:'mirror maze illusion',
+ aquamir:'indoor water park slides',
+ aura:'shopping mall atrium interior',
+ delfinia:'dolphin show pool audience',
+ pechki_rest:'russian restaurant interior',
+ tochka:'coworking space desks laptops',
+ gpntb:'library reading hall desks'
+};
