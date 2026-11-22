@@ -423,3 +423,38 @@ if(Photo.pending){
     });
   }
 })();
+
+/* ===== Высота шапки + ротация заголовка ===== */
+(function(){
+  var hd=document.getElementById('hd');
+  function setH(){if(hd)document.documentElement.style.setProperty('--hd-h',hd.offsetHeight+'px');}
+  setH();
+  window.addEventListener('resize',setH);
+  if('ResizeObserver'in window&&hd)new ResizeObserver(setH).observe(hd);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(setH);
+  setTimeout(setH,400);
+})();
+(function(){
+  if(window.__hlRot)return;window.__hlRot=1;
+  var h1=document.querySelector('.hero h1');
+  if(!h1)return;
+  var phrases=['Куда идти сегодня','Куда двинем вечером','Где погулять','Куда сходить вдвоём','Где выпить кофе','Куда пойти с детьми'];
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  h1.innerHTML='<span class="hl-mark draw"><span class="hl-text">'+phrases[0]+'</span></span>';
+  if(reduce)return;
+  var i=0,timer=null;
+  function tick(){
+    i=(i+1)%phrases.length;
+    var mark=h1.querySelector('.hl-mark'),txt=h1.querySelector('.hl-text');
+    txt.classList.add('out');
+    setTimeout(function(){
+      txt.textContent=phrases[i];
+      mark.classList.remove('draw');void mark.offsetWidth;mark.classList.add('draw');
+      txt.classList.remove('out');
+    },240);
+  }
+  function start(){if(!timer)timer=setInterval(tick,4200);}
+  function stop(){clearInterval(timer);timer=null;}
+  start();
+  document.addEventListener('visibilitychange',function(){document.hidden?stop():start();});
+})();
