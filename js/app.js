@@ -430,3 +430,31 @@ if(Photo.pending){
     },600);
   }
 })();
+
+/* ===== Мобильная навигация и фильтры ===== */
+(function(){
+  if(!document.getElementById('mobileNav')){
+    var nav=document.createElement('nav');
+    nav.className='mnav';nav.id='mobileNav';nav.setAttribute('aria-label','Навигация');
+    nav.innerHTML=
+      '<a href="#places" class="mnav-i" data-nav="places"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Места</span></a>'+
+      '<a href="#collections" class="mnav-i" data-nav="collections"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Подборки</span></a>'+
+      '<a href="#map-sec" class="mnav-i" data-nav="map-sec"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span>Карта</span></a>'+
+      '<button class="mnav-i" type="button" data-mn="saved"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg><span>Избранное</span></button>';
+    document.body.appendChild(nav);
+    var sv=nav.querySelector('[data-mn="saved"]');
+    if(sv)sv.addEventListener('click',function(){var sb=document.getElementById('savedBtn');if(sb)sb.click();});
+  }
+  var grid=document.querySelector('.places-grid');
+  var filters=document.querySelector('.filters');
+  if(grid&&filters&&!document.getElementById('filtersToggle')){
+    var btn=document.createElement('button');
+    btn.className='filters-toggle';btn.id='filtersToggle';btn.type='button';
+    btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Фильтры';
+    grid.insertBefore(btn,filters);
+    btn.addEventListener('click',function(){
+      var open=filters.classList.toggle('open');
+      btn.classList.toggle('on',open);
+    });
+  }
+})();
