@@ -651,3 +651,261 @@ document.addEventListener('submit',function(e){
   var f=e.target;if(f&&f.id==='searchForm'){e.preventDefault();e.stopPropagation();m4Smart(document.getElementById('q').value);}
 },true);
 (function(){var qi=document.getElementById('q');if(qi)qi.placeholder='Например: тихое место вдвоём до 500, чтобы было открыто';})();
+
+/* ===== Своя схема города: SVG, без внешних карт ===== */
+(function(){
+if(window.__m4own)return;window.__m4own=1;
+var box=document.getElementById('cityMap');if(!box)return;
+var CN=(typeof CITY!=='undefined'&&CITY.name)||'';
+var G=(window.M4GEO||{})[CN];
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var PL=(typeof PLACES!=='undefined')?PLACES:[];
+if(!PL.length)return;
+var lats=PL.map(function(p){return p.lat}),lngs=PL.map(function(p){return p.lng});
+if(G){G.river&&G.river.forEach(function(a){lats.push(a[0]);lngs.push(a[1])});
+ (G.roads||[]).forEach(function(r){r.p.forEach(function(a){lats.push(a[0]);lngs.push(a[1])})});
+ (G.districts||[]).forEach(function(a){lats.push(a[0]);lngs.push(a[1])});}
+var minLa=Math.min.apply(null,lats),maxLa=Math.max.apply(null,lats),minLo=Math.min.apply(null,lngs),maxLo=Math.max.apply(null,lngs);
+var padLa=(maxLa-minLa)*0.10+0.004,padLo=(maxLo-minLo)*0.10+0.004;
+minLa-=padLa;maxLa+=padLa;minLo-=padLo;maxLo+=padLo;
+var LAT0=maxLa,KX=Math.cos(((minLa+maxLa)/2)*Math.PI/180)*11132,KY=11054;
+function P(lat,lng){return [(lng-minLo)*KX,(LAT0-lat)*KY]}
+var W=(maxLo-minLo)*KX,H=(maxLa-minLa)*KY;
+if(!G){G={roads:[],parks:[],districts:[],bridges:[]};
+ for(var i=1;i<8;i++){var y=H*i/8;G.roads.push({n:'',m:i===4?1:0,p:[],raw:[[0,y],[W,y]]})}
+ for(var j=1;j<7;j++){var x=W*j/7;G.roads.push({n:'',m:j===3?1:0,p:[],raw:[[x,0],[x,H]]})}}
+function line(pts){return pts.map(function(a,i){return (i?'L':'M')+a[0].toFixed(1)+' '+a[1].toFixed(1)}).join(' ')}
+function rp(arr){return arr.map(function(a){return P(a[0],a[1])})}
+var NS='http://www.w3.org/2000/svg';
+box.innerHTML='';
+var svg=document.createElementNS(NS,'svg');
+svg.setAttribute('class','m4map');svg.setAttribute('preserveAspectRatio','none');
+svg.setAttribute('aria-label','Схема города '+CN);
+box.appendChild(svg);
+var defs=document.createElementNS(NS,'defs');
+defs.innerHTML='<linearGradient id="m4w" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--m4-w1)"/><stop offset="1" style="stop-color:var(--m4-w2)"/></linearGradient>'+
+'<pattern id="m4grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="var(--m4-grid)" stroke-width="1"/></pattern>';
+svg.appendChild(defs);
+function g(cls){var e=document.createElementNS(NS,'g');if(cls)e.setAttribute('class',cls);svg.appendChild(e);return e}
+var gBg=g(),gPark=g('l-park'),gWater=g(),gRoadCase=g(),gRoad=g(),gBridge=g(),gMetro=g('l-metro'),gLabel=g('l-label'),gPin=g(),gMe=g();
+gBg.innerHTML='<rect x="'+(-W)+'" y="'+(-H)+'" width="'+(W*3)+'" height="'+(H*3)+'" fill="var(--m4-land)"/><rect x="'+(-W)+'" y="'+(-H)+'" width="'+(W*3)+'" height="'+(H*3)+'" fill="url(#m4grid)"/>';
+function drawStatic(){
+ var pk='';(G.parks||[]).forEach(function(a){var c=P(a[0],a[1]);pk+='<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="'+(a[2]/10).toFixed(1)+'" fill="var(--m4-park)"/>'});
+ gPark.innerHTML=pk;
+ var wt='';
+ if(G.river){var d=line(rp(G.river));
+  wt+='<path d="'+d+'" fill="none" stroke="url(#m4w)" stroke-width="'+G.riverW+'" stroke-linecap="round" stroke-linejoin="round"/>';
+  wt+='<path d="'+d+'" fill="none" stroke="var(--m4-flow)" stroke-width="'+(G.riverW*0.28)+'" stroke-linecap="round" stroke-dasharray="18 26" class="m4flow"/>';}
+ (G.rings||[]).forEach(function(r){var c=P(r[0],r[1]);wt+='<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="'+(r[2]/10).toFixed(1)+'" fill="none" stroke="var(--m4-ring)" stroke-width="5"/>'});
+ gWater.innerHTML=wt;
+ var cs='',rd='';
+ (G.roads||[]).forEach(function(r){var pts=r.raw||rp(r.p);var d=line(pts);
+  cs+='<path d="'+d+'" fill="none" stroke="var(--m4-case)" stroke-width="'+(r.m?11:7)+'" stroke-linecap="round" stroke-linejoin="round"/>';
+  rd+='<path d="'+d+'" fill="none" stroke="'+(r.m?'var(--m4-main)':'var(--m4-road)')+'" stroke-width="'+(r.m?7:4)+'" stroke-linecap="round" stroke-linejoin="round"/>';});
+ gRoadCase.innerHTML=cs;gRoad.innerHTML=rd;
+ var br='';
+ (G.bridges||[]).forEach(function(b){var a=P(b.p[0][0],b.p[0][1]),c=P(b.p[1][0],b.p[1][1]);
+  br+='<path d="M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+'L'+c[0].toFixed(1)+' '+c[1].toFixed(1)+'" stroke="var(--m4-case)" stroke-width="12" stroke-linecap="round" fill="none"/>';
+  br+='<path d="M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+'L'+c[0].toFixed(1)+' '+c[1].toFixed(1)+'" stroke="'+(b.rail?'var(--m4-metro-r)':'var(--m4-road)')+'" stroke-width="'+(b.rail?5:7)+'" stroke-linecap="round" fill="none"/>';
+  if(b.arch){var mx=(a[0]+c[0])/2,my=(a[1]+c[1])/2;
+   br+='<path d="M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+'Q'+mx.toFixed(1)+' '+(my-46).toFixed(1)+' '+c[0].toFixed(1)+' '+c[1].toFixed(1)+'" stroke="var(--m4-arch)" stroke-width="7" fill="none" stroke-linecap="round"/>';}});
+ gBridge.innerHTML=br;
+ var mt='';
+ (G.metro||[]).forEach(function(L){var pts=L.s.map(function(s){return P(s[0],s[1])});
+  mt+='<path d="'+line(pts)+'" fill="none" stroke="'+L.c+'" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>';
+  L.s.forEach(function(s,i){var c=pts[i];mt+='<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="4.6" fill="var(--m4-land)" stroke="'+L.c+'" stroke-width="2.6"/>'});});
+ gMetro.innerHTML=mt;
+}
+drawStatic();
+var vb={x:0,y:0,w:W,h:H},anim=null;
+var lay={metro:1,parks:1,districts:1,names:0};
+var tip=document.createElement('div');tip.className='m4tip';box.appendChild(tip);
+var scale=document.createElement('div');scale.className='m4scale';box.appendChild(scale);
+var note=document.createElement('div');note.className='m4note';note.textContent='Схема города · маршруты строятся в Яндекс Картах';box.appendChild(note);
+var zoom=document.createElement('div');zoom.className='m4zoom';
+zoom.innerHTML='<button type="button" data-z="1" aria-label="Приблизить">+</button><button type="button" data-z="-1" aria-label="Отдалить">−</button><button type="button" data-z="0" aria-label="Вся карта">⤢</button>';
+box.appendChild(zoom);
+function cw(){return box.clientWidth||800}
+function ch(){return box.clientHeight||600}
+function apply(){
+ vb.w=Math.max(W/60,Math.min(W*1.8,vb.w));
+ vb.h=vb.w*ch()/cw();
+ vb.x=Math.max(-W*0.35,Math.min(W*1.35-vb.w,vb.x));
+ vb.y=Math.max(-H*0.35,Math.min(H*1.35-vb.h,vb.y));
+ svg.setAttribute('viewBox',vb.x.toFixed(1)+' '+vb.y.toFixed(1)+' '+vb.w.toFixed(1)+' '+vb.h.toFixed(1));
+ var k=vb.w/cw();
+ [].forEach.call(gPin.children,function(el){var px=el.getAttribute('data-x'),py=el.getAttribute('data-y');el.setAttribute('transform','translate('+px+','+py+') scale('+k.toFixed(4)+')')});
+ [].forEach.call(gMe.children,function(el){var px=el.getAttribute('data-x'),py=el.getAttribute('data-y');el.setAttribute('transform','translate('+px+','+py+') scale('+k.toFixed(4)+')')});
+ drawLabels(k);drawScale(k);
+ gMetro.style.display=lay.metro?'':'none';
+ gPark.style.display=lay.parks?'':'none';
+}
+function drawScale(k){
+ var opts=[100,200,500,1000,2000,5000,10000],best=opts[0];
+ for(var i=0;i<opts.length;i++){if(opts[i]/10/k<=140)best=opts[i]}
+ var px=best/10/k;
+ scale.innerHTML='<i style="width:'+px.toFixed(0)+'px"></i><span>'+(best>=1000?(best/1000)+' км':best+' м')+'</span>';
+}
+function drawLabels(k){
+ var s='',showRoad=vb.w<W*0.75,showMetro=vb.w<W*0.62;
+ if(lay.districts)(G.districts||[]).forEach(function(a){var c=P(a[0],a[1]);
+  s+='<text class="m4dist" x="'+c[0].toFixed(1)+'" y="'+c[1].toFixed(1)+'" font-size="'+(11*k).toFixed(2)+'">'+a[2]+'</text>'});
+ if(G.riverName&&G.riverAt){var c=P(G.riverAt[0],G.riverAt[1]);
+  s+='<text class="m4wat" x="'+c[0].toFixed(1)+'" y="'+c[1].toFixed(1)+'" font-size="'+(13*k).toFixed(2)+'" transform="rotate(-52 '+c[0].toFixed(1)+' '+c[1].toFixed(1)+')">'+G.riverName+'</text>'}
+ if(showRoad)(G.roads||[]).forEach(function(r){if(!r.n||!r.m)return;var pts=r.raw||rp(r.p);var m=pts[Math.floor(pts.length/2)];
+  s+='<text class="m4road" x="'+m[0].toFixed(1)+'" y="'+(m[1]-6*k).toFixed(1)+'" font-size="'+(9.5*k).toFixed(2)+'">'+r.n+'</text>'});
+ if(showMetro&&lay.metro)(G.metro||[]).forEach(function(L){L.s.forEach(function(st){var c=P(st[0],st[1]);
+  s+='<text class="m4met" x="'+(c[0]+7*k).toFixed(1)+'" y="'+(c[1]+3*k).toFixed(1)+'" font-size="'+(8.5*k).toFixed(2)+'">'+st[2]+'</text>'})});
+ (G.bridges||[]).forEach(function(b){if(vb.w>W*0.5)return;var a=P(b.p[0][0],b.p[0][1]),c=P(b.p[1][0],b.p[1][1]);
+  s+='<text class="m4road" x="'+((a[0]+c[0])/2).toFixed(1)+'" y="'+((a[1]+c[1])/2-8*k).toFixed(1)+'" font-size="'+(8.5*k).toFixed(2)+'">'+b.n+'</text>'});
+ if(lay.names){var used=[];
+  PL.forEach(function(p){if(p.__off)return;var c=P(p.lat,p.lng);var w=p.name.length*5.4*k,h=11*k;
+   var r={x:c[0]+13*k,y:c[1]-24*k,w:w,h:h},hit=false;
+   for(var i=0;i<used.length;i++){var u=used[i];if(r.x<u.x+u.w&&r.x+r.w>u.x&&r.y<u.y+u.h&&r.y+r.h>u.y){hit=true;break}}
+   if(hit)return;used.push(r);
+   s+='<text class="m4pn" x="'+r.x.toFixed(1)+'" y="'+(r.y+9*k).toFixed(1)+'" font-size="'+(9.5*k).toFixed(2)+'">'+p.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</text>'});}
+ gLabel.innerHTML=s;
+}
+var markers={};
+function pins(list){
+ var ids={};list.forEach(function(p){ids[p.id]=1});
+ var s='';
+ PL.forEach(function(p){var c=P(p.lat,p.lng);var on=!!ids[p.id];p.__off=!on;
+  var col=(typeof CAT!=='undefined'&&CAT[p.cat]&&CAT[p.cat].c)||'#19B7A5';
+  var idx=on?list.indexOf(p)+1:'';
+  var st=openNow(p);
+  s+='<g class="m4pin'+(on?'':' off')+(st===false?' shut':'')+'" data-id="'+p.id+'" data-x="'+c[0].toFixed(1)+'" data-y="'+c[1].toFixed(1)+'" tabindex="'+(on?'0':'-1')+'" role="button" aria-label="'+p.name.replace(/"/g,'')+'">'+
+   '<ellipse class="sh" cx="0" cy="1.5" rx="7" ry="2.6"/>'+
+   '<path d="M0 0C-3 -6 -11 -13 -11 -21A11 11 0 1 1 11 -21C11 -13 3 -6 0 0Z" fill="'+col+'" stroke="#fff" stroke-width="2"/>'+
+   '<circle cx="0" cy="-21" r="7.4" fill="#FFFDF9"/>'+
+   (on?'<text x="0" y="-17.6" text-anchor="middle" font-size="9.4" font-weight="800" fill="#172B4D">'+idx+'</text>':'')+
+   '</g>';});
+ gPin.innerHTML=s;markers={};
+ [].forEach.call(gPin.children,function(el){markers[el.getAttribute('data-id')]=el});
+ apply();
+}
+function fit(list,anim2){
+ var t=(list&&list.length)?list:PL;
+ var xs=[],ys=[];t.forEach(function(p){var c=P(p.lat,p.lng);xs.push(c[0]);ys.push(c[1])});
+ if(!xs.length){xs=[0,W];ys=[0,H]}
+ var x0=Math.min.apply(null,xs),x1=Math.max.apply(null,xs),y0=Math.min.apply(null,ys),y1=Math.max.apply(null,ys);
+ var pw=Math.max(x1-x0,W*0.06),ph=Math.max(y1-y0,H*0.06);
+ pw*=1.35;ph*=1.45;
+ var ar=cw()/ch();if(pw/ph<ar)pw=ph*ar;else ph=pw/ar;
+ var tx=(x0+x1)/2-pw/2,ty=(y0+y1)/2-ph/2;
+ setView(tx,ty,pw,anim2!==false);
+}
+function setView(x,y,w,animate){
+ if(anim)cancelAnimationFrame(anim),anim=null;
+ if(!animate||reduce){vb.x=x;vb.y=y;vb.w=w;apply();return}
+ var s={x:vb.x,y:vb.y,w:vb.w},t0=performance.now(),dur=480;
+ (function step(t){var k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);
+  vb.x=s.x+(x-s.x)*e;vb.y=s.y+(y-s.y)*e;vb.w=s.w+(w-s.w)*e;apply();
+  if(k<1)anim=requestAnimationFrame(step);else anim=null;})(t0);
+}
+zoom.addEventListener('click',function(e){var b=e.target.closest('[data-z]');if(!b)return;
+ var z=+b.dataset.z;
+ if(z===0){fit(PL);return}
+ var f=z>0?0.68:1.47,cx=vb.x+vb.w/2,cy=vb.y+vb.h/2,nw=vb.w*f;
+ setView(cx-nw/2,cy-nw*ch()/cw()/2,nw,true);});
+svg.addEventListener('wheel',function(e){e.preventDefault();
+ var r=box.getBoundingClientRect(),mx=(e.clientX-r.left)/r.width,my=(e.clientY-r.top)/r.height;
+ var f=Math.exp(e.deltaY*0.0016),nw=Math.max(W/60,Math.min(W*1.8,vb.w*f));
+ var wx=vb.x+vb.w*mx,wy=vb.y+vb.h*my;
+ vb.w=nw;vb.h=nw*ch()/cw();vb.x=wx-vb.w*mx;vb.y=wy-vb.h*my;apply();},{passive:false});
+var ptr={},drag=null,pinch=null;
+svg.addEventListener('pointerdown',function(e){
+ if(e.target.closest('.m4pin'))return;
+ ptr[e.pointerId]={x:e.clientX,y:e.clientY};
+ var ids=Object.keys(ptr);
+ if(ids.length===2){pinch={d:dist(),w:vb.w};drag=null}
+ else{drag={x:e.clientX,y:e.clientY,vx:vb.x,vy:vb.y};svg.setPointerCapture(e.pointerId);svg.classList.add('grab')}
+});
+function dist(){var a=Object.keys(ptr).map(function(k){return ptr[k]});return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1}
+svg.addEventListener('pointermove',function(e){
+ if(ptr[e.pointerId])ptr[e.pointerId]={x:e.clientX,y:e.clientY};
+ if(pinch&&Object.keys(ptr).length===2){var f=pinch.d/dist();vb.w=Math.max(W/60,Math.min(W*1.8,pinch.w*f));apply();return}
+ if(drag){var k=vb.w/cw();vb.x=drag.vx-(e.clientX-drag.x)*k;vb.y=drag.vy-(e.clientY-drag.y)*k;apply();return}
+ var p=e.target.closest&&e.target.closest('.m4pin');
+ if(p&&!p.classList.contains('off')){var pl=PL.filter(function(q){return q.id===p.dataset.id})[0];
+  if(pl){var r=box.getBoundingClientRect();tip.textContent=pl.name+' · '+budgetLabel(pl);
+   tip.style.left=Math.max(8,Math.min(r.width-160,e.clientX-r.left+12))+'px';
+   tip.style.top=Math.max(8,e.clientY-r.top-38)+'px';tip.classList.add('on');}}
+ else tip.classList.remove('on');
+});
+function up(e){delete ptr[e.pointerId];if(Object.keys(ptr).length<2)pinch=null;if(!Object.keys(ptr).length){drag=null;svg.classList.remove('grab')}}
+svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);svg.addEventListener('pointerleave',function(e){up(e);tip.classList.remove('on')});
+svg.addEventListener('dblclick',function(e){var r=box.getBoundingClientRect(),mx=(e.clientX-r.left)/r.width,my=(e.clientY-r.top)/r.height;
+ var nw=vb.w*0.6,wx=vb.x+vb.w*mx,wy=vb.y+vb.h*my;setView(wx-nw*mx,wy-nw*ch()/cw()*my,nw,true)});
+gPin.addEventListener('click',function(e){var p=e.target.closest('.m4pin');if(!p||p.classList.contains('off'))return;openPlace(p.dataset.id)});
+gPin.addEventListener('keydown',function(e){if(e.key!=='Enter'&&e.key!==' ')return;var p=e.target.closest('.m4pin');if(p&&!p.classList.contains('off')){e.preventDefault();openPlace(p.dataset.id)}});
+var tools=document.querySelector('.map-tools');
+if(tools&&!document.getElementById('m4layers')){
+ var wrap=document.createElement('span');wrap.id='m4layers';wrap.className='m4layers';
+ wrap.innerHTML='<button type="button" class="m4lay on" data-l="metro">Метро</button><button type="button" class="m4lay on" data-l="parks">Парки</button><button type="button" class="m4lay on" data-l="districts">Районы</button><button type="button" class="m4lay" data-l="names">Подписи мест</button>';
+ tools.appendChild(wrap);
+ wrap.addEventListener('click',function(e){var b=e.target.closest('[data-l]');if(!b)return;
+  var k=b.dataset.l;lay[k]=lay[k]?0:1;b.classList.toggle('on',!!lay[k]);apply();});
+ var fb=document.createElement('button');fb.type='button';fb.className='btn btn-line btn-sm';fb.id='m4fitSel';fb.textContent='По подборке';
+ tools.insertBefore(fb,document.getElementById('mapCount')||null);
+ fb.addEventListener('click',function(){fit(filtered());toast('Показаны места подборки')});
+}
+var geoBtn=document.getElementById('mapGeo');
+if(geoBtn){var nb=geoBtn.cloneNode(true);geoBtn.parentNode.replaceChild(nb,geoBtn);
+ nb.addEventListener('click',function(){
+  if(!navigator.geolocation){toast('Браузер не отдаёт геолокацию');return}
+  toast('Ищем тебя…');
+  navigator.geolocation.getCurrentPosition(function(pos){
+   var c=P(pos.coords.latitude,pos.coords.longitude);
+   gMe.innerHTML='<g data-x="'+c[0].toFixed(1)+'" data-y="'+c[1].toFixed(1)+'"><circle r="16" fill="var(--m4-me)" opacity=".18"/><circle r="6" fill="var(--m4-me)" stroke="#fff" stroke-width="2.5"/></g>';
+   setView(c[0]-vb.w/2,c[1]-vb.h/2,Math.min(vb.w,W*0.22),true);toast('Ты здесь');
+  },function(){toast('Не удалось определить место')},{timeout:9000,maximumAge:60000});});}
+syncMap=function(list){
+ pins(list);
+ var mc=document.getElementById('mapCount');if(mc)mc.textContent=list.length+' '+pw(list.length)+' на схеме';
+ var ml=document.getElementById('mapList');
+ if(ml)ml.innerHTML=list.length?list.map(function(p,i){var c=(typeof CAT!=='undefined'&&CAT[p.cat])||{c:'#19B7A5',dark:true};
+  return '<button class="mrow" data-fly="'+p.id+'" type="button"><span class="dot'+(c.dark?' dark':'')+'" style="background:'+c.c+'">'+(i+1)+'</span><span><b>'+p.name+'</b><span>'+p.cat+' · '+budgetLabel(p)+'</span></span></button>'}).join(''):'<div class="map-empty">Под эти условия мест нет.</div>';
+};
+fitMap=function(){fit(PL)};
+flyToPlace=function(id){
+ var p=PL.filter(function(q){return q.id===id})[0];if(!p)return;
+ document.getElementById('map-sec').scrollIntoView({behavior:reduce?'auto':'smooth'});
+ setTimeout(function(){
+  var c=P(p.lat,p.lng),nw=Math.min(vb.w,W*0.14);
+  setView(c[0]-nw/2,c[1]-nw*ch()/cw()/2,nw,true);
+  var el=markers[id];if(el){el.classList.add('pulse');setTimeout(function(){el.classList.remove('pulse')},1900)}
+ },reduce?0:420);
+};
+initMap=function(){};
+if('ResizeObserver'in window)new ResizeObserver(function(){apply()}).observe(box);
+window.addEventListener('resize',apply);
+syncMap(filtered());fit(PL,false);
+})();
+
+/* ===== Обратная связь: письма через FormSubmit ===== */
+window.__M4_MAIL='meste4ko.support@gmail.com';
+window.m4Send=function(subject,data){
+  var payload=Object.assign({_subject:subject,_template:'table',_captcha:'false'},data||{});
+  return fetch('https://formsubmit.co/ajax/'+encodeURIComponent(window.__M4_MAIL),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()});
+};
+document.addEventListener('submit',function(e){
+  var f=e.target;
+  if(f&&f.id==='suggestForm'){e.preventDefault();e.stopPropagation();
+    var d={};new FormData(f).forEach(function(v,k){d[k]=v});
+    var a=store.get('m4.suggests',[]);a.push(Object.assign({at:new Date().toISOString()},d));store.set('m4.suggests',a);
+    var btn=f.querySelector('button[type=submit]');if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
+    m4Send('Месте4ко · '+(typeof CITY!=='undefined'?CITY.name:'')+' — предложение места',Object.assign({город:(typeof CITY!=='undefined'?CITY.name:'')},d))
+      .then(function(){f.style.display='none';var ok=$('#suggestOk');if(ok)ok.classList.add('show');toast('Заявка отправлена редакции');})
+      .catch(function(){if(btn){btn.disabled=false;btn.textContent='Отправить';}toast('Не отправилось — нет связи. Данные сохранили, попробуйте позже','Почта',function(){location.href='mailto:'+window.__M4_MAIL});});
+  }
+  else if(f&&f.id==='reportForm'){e.preventDefault();e.stopPropagation();
+    var id=$('#rpPlace').value,rec={id:id,type:$('#rpType').value,text:$('#rpText').value,at:new Date().toISOString()};
+    var arr=store.get('m4.reportList',[]);arr.push(rec);store.set('m4.reportList',arr);
+    S.reports[id]=true;saveState();
+    $('#reportDlg').close();render();
+    toast('Спасибо. Место помечено «На проверке»');
+    var pl=PLACES.filter(function(x){return x.id===id})[0];
+    m4Send('Месте4ко · '+(typeof CITY!=='undefined'?CITY.name:'')+' — ошибка',{место:pl?pl.name:id,что:rec.type,описание:rec.text}).catch(function(){});
+  }
+},true);

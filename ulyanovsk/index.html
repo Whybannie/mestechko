@@ -100,7 +100,7 @@ dialog::backdrop{background:rgba(6,20,17,.72);backdrop-filter:blur(4px)}
 <div class="actions"><a class="btn btn-coral" href="../">Открыть Новосибирск</a><button class="btn btn-ghost" id="allBtn2" type="button">Все 30 городов</button></div>
 <div class="ready"><span class="ready-l">Уже готово:</span><a href="../">Новосибирск</a><a href="../moskva/">Москва</a><a href="../krasnoyarsk/">Красноярск</a></div>
 </main>
-<footer class="wrap foot">Месте4ко · найдём место для себя · Поволжье</footer>
+<footer class="wrap foot">Месте4ко · найдём место для себя · Поволжье · <a style="color:#35D0B0" href="mailto:meste4ko.support@gmail.com">meste4ko.support@gmail.com</a></footer>
 <dialog id="allDlg"><div class="dlg">
 <div class="dlg-head"><h2>Выберите город</h2><button class="x" id="allClose" type="button" aria-label="Закрыть">✕</button></div>
 <p class="dlg-lead">Гид готов для трёх городов. Остальные собираем — откройте любой, чтобы увидеть статус.</p>
@@ -138,5 +138,32 @@ function t(){var d=new Date();if(rec.tz){try{var p=new Intl.DateTimeFormat('ru-R
 var u=new Date(d.getTime()+d.getTimezoneOffset()*60000+(rec.utc||3)*3600000);return ('0'+u.getHours()).slice(-2)+':'+('0'+u.getMinutes()).slice(-2);}
 function up(){el.querySelector('b').textContent=t();if(rec.prep)el.querySelector('span').textContent='в '+rec.prep;}
 up();setInterval(up,30000);})();
-</script></body>
+</script><script>
+window.__M4_MAIL='meste4ko.support@gmail.com';
+(function(){
+ function send(subj,d){return fetch('https://formsubmit.co/ajax/'+window.__M4_MAIL,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(Object.assign({_subject:subj,_template:'table',_captcha:'false'},d))}).then(function(r){if(!r.ok)throw 0;return r.json()});}
+ document.addEventListener('click',function(e){
+   if(e.target&&e.target.tagName==='DIALOG')e.target.close();
+   var c=e.target.closest?e.target.closest('[data-close]'):null;
+   if(c){var d=c.closest('dialog');if(d)d.close();}
+ });
+ var rp=document.getElementById('rpPlace');
+ if(rp&&!rp.options.length)rp.innerHTML='<option value="город в целом">Город в целом</option>';
+ var rf=document.getElementById('reportForm');
+ if(rf&&!rf.dataset.w){rf.dataset.w='1';rf.addEventListener('submit',function(e){e.preventDefault();
+   var d={};new FormData(rf).forEach(function(v,k){d[k]=v});
+   send('Месте4ко — нашли ошибку',d).then(function(){var dg=rf.closest('dialog');if(dg)dg.close();alert('Спасибо! Проверим.')}).catch(function(){alert('Не отправилось. Напишите: '+window.__M4_MAIL)});
+ });}
+ var fr=document.getElementById('footReport');
+ if(fr)fr.addEventListener('click',function(){var d=document.getElementById('reportDlg');if(d)d.showModal()});
+ var f=document.getElementById('suggestForm');
+ if(f&&!f.dataset.w){f.dataset.w='1';f.addEventListener('submit',function(e){e.preventDefault();
+   var d={};new FormData(f).forEach(function(v,k){d[k]=v});
+   var b=f.querySelector('button[type=submit]');if(b){b.disabled=true;b.textContent='Отправляем…';}
+   send('Месте4ко — предложение места',d).then(function(){f.style.display='none';var ok=document.getElementById('suggestOk');if(ok)ok.classList.add('show');})
+   .catch(function(){if(b){b.disabled=false;b.textContent='Отправить';}alert('Не отправилось. Напишите напрямую: '+window.__M4_MAIL);});
+ });}
+})();
+</script>
+</body>
 </html>

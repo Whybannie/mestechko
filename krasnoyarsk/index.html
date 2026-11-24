@@ -14,13 +14,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800&family=Golos+Text:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/layout.css">
 <link rel="stylesheet" href="../css/components.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <script src="data.js" defer></script>
-<script src="../js/cities.js" defer></script><script src="../js/app.js" defer></script>
+<script src="../js/cities.js" defer></script><script src="../js/mapgeo.js" defer></script>
+<script src="../js/app.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">К основному содержанию</a>
@@ -183,6 +182,7 @@
     <div class="links">
       <button class="linklike" id="footReport" type="button">Нашли ошибку?</button>
       <button class="linklike" id="footSources" type="button">Источники фото</button>
+      <a class="linklike" href="mailto:meste4ko.support@gmail.com">Написать редакции</a>
       <a class="linklike" href="#suggest">Предложить место</a>
     </div>
     <div class="sp"></div>
@@ -226,7 +226,7 @@
 <dialog id="suggestDlg" aria-labelledby="sgTitle">
   <form class="dlg-form" id="suggestForm">
     <h3 id="sgTitle">Предложить место</h3>
-    <p class="lead">Непроверенные адреса не публикуем: сначала съходим сами.</p>
+    <p class="lead">Непроверенные адреса не публикуем: сначала съходим сами. Напрямую: <a href="mailto:meste4ko.support@gmail.com">meste4ko.support@gmail.com</a></p>
     <input class="field" name="name" placeholder="Название" required>
     <input class="field" name="addr" placeholder="Адрес или район" required>
     <select class="field" name="cat" required><option value="" disabled selected>Раздел</option><option>Поесть</option><option>Погулять</option><option>С детьми</option><option>Вдвоём</option><option>Поработать</option><option>Полезное</option><option>Другое</option></select>
