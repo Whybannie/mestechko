@@ -265,9 +265,9 @@ const goPlaces=()=>$('#places').scrollIntoView({behavior:reduced?'auto':'smooth'
 function applyCol(k){resetAll();S.col=k;Object.assign(S,colApply[k]||{});render();goPlaces();setTimeout(fitMap,300)}
 
 /* события */
-$('#searchForm').addEventListener('submit',e=>{e.preventDefault();S.q=$('#q').value;S.col=null;render();goPlaces()});
-$('#q').addEventListener('input',e=>{S.q=e.target.value;S.col=null;render()});
-$('#chips').addEventListener('click',e=>{
+(document.getElementById('searchForm')||{addEventListener:function(){}}).addEventListener('submit',e=>{e.preventDefault();S.q=$('#q').value;S.col=null;render();goPlaces()});
+(document.getElementById('q')||{addEventListener:function(){}}).addEventListener('input',e=>{S.q=e.target.value;S.col=null;render()});
+(document.getElementById('chips')||{addEventListener:function(){}}).addEventListener('click',e=>{
   const b=e.target.closest('.chip');if(!b)return;const k=b.dataset.chip;S.col=null;
   if(k==='open')S.open=!S.open;
   else if(k==='warm')S.weather=S.weather==='in'?'any':'in';
@@ -278,14 +278,14 @@ $('#chips').addEventListener('click',e=>{
   render();goPlaces();
 });
 $$('.seg').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[g.dataset.group]=b.dataset.val;S.col=null;render()}));
-$('#openTgl').addEventListener('click',()=>{S.open=!S.open;S.col=null;render()});
-$('#sortSel').addEventListener('change',e=>{S.sort=e.target.value;render()});
-$('#resetBtn').addEventListener('click',()=>{resetAll();toast('Фильтры сброшены');fitMap()});
-$('#bannerClear').addEventListener('click',()=>{S.col=null;S.savedOnly=false;render()});
-$('#savedBtn').addEventListener('click',()=>{S.savedOnly=!S.savedOnly;S.col=null;render();goPlaces();if(S.savedOnly&&!S.saved.size)toast('Пока пусто — жми ♥ на карточке')});
-$('#randomBtn').addEventListener('click',()=>{const l=filtered();if(!l.length){toast('Под эти условия ничего нет');return}const p=l[Math.floor(Math.random()*l.length)];openPlace(p.id);toast('Случайное: '+p.name)});
-$('#mapFit').addEventListener('click',()=>{fitMap();toast('Показаны все метки')});
-$('#mapGeo').addEventListener('click',()=>{
+(document.getElementById('openTgl')||{addEventListener:function(){}}).addEventListener('click',()=>{S.open=!S.open;S.col=null;render()});
+(document.getElementById('sortSel')||{addEventListener:function(){}}).addEventListener('change',e=>{S.sort=e.target.value;render()});
+(document.getElementById('resetBtn')||{addEventListener:function(){}}).addEventListener('click',()=>{resetAll();toast('Фильтры сброшены');fitMap()});
+(document.getElementById('bannerClear')||{addEventListener:function(){}}).addEventListener('click',()=>{S.col=null;S.savedOnly=false;render()});
+(document.getElementById('savedBtn')||{addEventListener:function(){}}).addEventListener('click',()=>{S.savedOnly=!S.savedOnly;S.col=null;render();goPlaces();if(S.savedOnly&&!S.saved.size)toast('Пока пусто — жми ♥ на карточке')});
+(document.getElementById('randomBtn')||{addEventListener:function(){}}).addEventListener('click',()=>{const l=filtered();if(!l.length){toast('Под эти условия ничего нет');return}const p=l[Math.floor(Math.random()*l.length)];openPlace(p.id);toast('Случайное: '+p.name)});
+(document.getElementById('mapFit')||{addEventListener:function(){}}).addEventListener('click',()=>{fitMap();toast('Показаны все метки')});
+(document.getElementById('mapGeo')||{addEventListener:function(){}}).addEventListener('click',()=>{
   if(!navigator.geolocation){toast('Браузер не отдаёт геолокацию');return}
   toast('Ищем тебя…');
   navigator.geolocation.getCurrentPosition(pos=>{
@@ -306,20 +306,20 @@ document.addEventListener('click',e=>{
   const cl=e.target.closest('[data-close]');if(cl){const d=cl.closest('dialog');if(d)d.close()}
 });
 document.addEventListener('keydown',e=>{const t=e.target;if(t&&t.classList&&t.classList.contains('card')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openPlace(t.dataset.id)}});
-$('#pdSave').addEventListener('click',()=>toggleSave(currentId));
-$('#pdReport').addEventListener('click',()=>openReport(currentId));
-$('#pdOnMap').addEventListener('click',()=>{$('#placeDlg').close();flyToPlace(currentId)});
-$('#footReport').addEventListener('click',()=>openReport(PLACES[0].id));
-$('#footSources').addEventListener('click',()=>{renderSources();showDialog($('#sourcesDlg'))});
-$('#suggestOpen').addEventListener('click',()=>{$('#suggestForm').style.display='block';$('#suggestOk').classList.remove('show');showDialog($('#suggestDlg'))});
-$('#routeOpen').addEventListener('click',()=>showDialog($('#routeDlg')));
-$('#suggestForm').addEventListener('submit',e=>{
+(document.getElementById('pdSave')||{addEventListener:function(){}}).addEventListener('click',()=>toggleSave(currentId));
+(document.getElementById('pdReport')||{addEventListener:function(){}}).addEventListener('click',()=>openReport(currentId));
+(document.getElementById('pdOnMap')||{addEventListener:function(){}}).addEventListener('click',()=>{$('#placeDlg').close();flyToPlace(currentId)});
+(document.getElementById('footReport')||{addEventListener:function(){}}).addEventListener('click',()=>openReport(PLACES[0].id));
+(document.getElementById('footSources')||{addEventListener:function(){}}).addEventListener('click',()=>{renderSources();showDialog($('#sourcesDlg'))});
+(document.getElementById('suggestOpen')||{addEventListener:function(){}}).addEventListener('click',()=>{$('#suggestForm').style.display='block';$('#suggestOk').classList.remove('show');showDialog($('#suggestDlg'))});
+(document.getElementById('routeOpen')||{addEventListener:function(){}}).addEventListener('click',()=>showDialog($('#routeDlg')));
+(document.getElementById('suggestForm')||{addEventListener:function(){}}).addEventListener('submit',e=>{
   e.preventDefault();const a=store.get(CK+'.suggests',[]);
   a.push({...Object.fromEntries(new FormData(e.target).entries()),at:new Date().toISOString()});store.set(CK+'.suggests',a);
   e.target.style.display='none';$('#suggestOk').classList.add('show');toast('Заявка принята');
 });
-$('#suggestAgain').addEventListener('click',()=>{$('#suggestOk').classList.remove('show');const f=$('#suggestForm');f.reset();f.style.display='block'});
-$('#reportForm').addEventListener('submit',e=>{
+(document.getElementById('suggestAgain')||{addEventListener:function(){}}).addEventListener('click',()=>{$('#suggestOk').classList.remove('show');const f=$('#suggestForm');f.reset();f.style.display='block'});
+(document.getElementById('reportForm')||{addEventListener:function(){}}).addEventListener('submit',e=>{
   e.preventDefault();const id=$('#rpPlace').value,a=store.get(CK+'.reportList',[]);
   a.push({id,type:$('#rpType').value,text:$('#rpText').value,at:new Date().toISOString()});store.set(CK+'.reportList',a);
   S.reports[id]=true;saveState();$('#reportDlg').close();render();toast('Спасибо. Место на проверке');
@@ -945,4 +945,25 @@ document.addEventListener('submit',function(e){
   }
   wire('suggestForm','Спасибо! Заявка ушла на почту редакции.');
   wire('reportForm','Спасибо! Сообщение ушло на почту редакции.');
+})();
+
+/* ===== Кнопки в футере ===== */
+(function(){
+  var suggest=document.querySelector('[data-open-suggest]');
+  if(suggest){
+    suggest.addEventListener('click',function(e){
+      e.preventDefault();
+      var sb=document.querySelector('[data-suggest-btn]')||document.getElementById('suggestBtn');
+      if(sb)sb.click();
+      else{var d=document.getElementById('suggestDlg');if(d)d.showModal()}
+    });
+  }
+  var cities=document.querySelector('[data-open-cities]');
+  if(cities){
+    cities.addEventListener('click',function(e){
+      e.preventDefault();
+      var b=document.getElementById('allBtn')||document.querySelector('.city-pick')||document.querySelector('[data-cities-btn]');
+      if(b)b.click();
+    });
+  }
 })();
