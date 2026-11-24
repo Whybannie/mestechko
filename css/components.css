@@ -425,3 +425,13 @@ section{scroll-margin-top:calc(var(--hd-h,110px) + 14px) !important}
 body,.hd,.card,.col,.filters,.search,.route,.suggest,dialog,.map-side,.city-time,.saved-btn,.chip,.mnav,.field,.fswitch,.seg button,.btn-line{transition:background-color .6s ease,color .6s ease,border-color .6s ease,transform .16s ease,box-shadow .3s ease}
 @media (prefers-reduced-motion:reduce){.hero-sun,.hero-sun .rays,.sky-stars i,.sky-clouds i,.shoot,.hero-sun .sky-art{animation:none!important}}
 @media (max-width:760px){.hero-sun{width:130px;height:130px;right:-22px;top:calc(var(--hd-h,110px) + 6px)}.sky-clouds{display:none}}
+
+/* ===== 50 мест: догрузка ленты и кластеры на карте ===== */
+.more-wrap{grid-column:1/-1;display:flex;justify-content:center;padding:8px 0 2px}
+.more-wrap .btn{min-width:280px}
+.marker-cluster{background:transparent}
+.marker-cluster div{width:34px;height:34px;margin:3px;border-radius:50%;display:grid;place-items:center;font-family:var(--sans);font-weight:800;font-size:12px;line-height:1;border:2px solid #fff;box-shadow:0 3px 10px rgba(23,43,77,.35)}
+.marker-cluster-small div,.marker-cluster-medium div{background:var(--teal,#19B7A5);color:#06231E}
+.marker-cluster-large div{background:var(--coral,#FF6B5E);color:#2A0E08}
+:root[data-m4phase="night"] .marker-cluster div{border-color:#0C1424}
+@media (max-width:760px){.more-wrap .btn{width:100%;min-width:0}}

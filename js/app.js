@@ -136,10 +136,13 @@ function cardHtml(p,i){
 }
 function render(){
   const list=filtered();
+  var _sig=[S.q,S.tag,S.company,S.mood,S.budget,S.weather,S.open,S.savedOnly,S.sort,S.col].join('|');
+  if(window.__m4Sig!==_sig){window.__m4Sig=_sig;window.__m4Limit=18;}
   $('#countLine').textContent=list.length+' '+pw(list.length);
   $('#activeHint').textContent=activeSummary();
-  $('#grid').innerHTML=list.length?list.map(cardHtml).join(''):`<div class="empty"><b>Пусто</b>Под эти условия ничего нет.<br><br><button class="btn btn-line" id="emptyReset" type="button">Сбросить фильтры</button></div>`;
+  var _lim=(window.__m4Limit||18),_shown=list.slice(0,_lim);$('#grid').innerHTML=list.length?_shown.map(cardHtml).join('')+(_lim<list.length?'<div class="more-wrap"><button class="btn btn-line" id="moreBtn" type="button">Показать ещё '+Math.min(18,list.length-_lim)+' · осталось '+(list.length-_lim)+'</button></div>':''):`<div class="empty"><b>Пусто</b>Под эти условия ничего нет.<br><br><button class="btn btn-line" id="emptyReset" type="button">Сбросить фильтры</button></div>`;
   const er=$('#emptyReset');if(er)er.addEventListener('click',()=>{resetAll();toast('Фильтры сброшены')});
+  var _mb=document.getElementById('moreBtn');if(_mb)_mb.addEventListener('click',function(){window.__m4Limit=(window.__m4Limit||18)+18;render();});
   const bn=$('#banner');
   if(S.col){const c=COLS.find(x=>x.k===S.col);bn.classList.add('show');$('#bannerName').textContent=c.n;$('#bannerMeta').textContent=EDITOR+' · '+ISSUE+' · '+list.length+' '+pw(list.length)}
   else if(S.savedOnly){bn.classList.add('show');$('#bannerName').textContent='Сохранённое';$('#bannerMeta').textContent=list.length+' '+pw(list.length)}
@@ -190,7 +193,7 @@ function initMap(){
   }
   M.map=L.map(box,{scrollWheelZoom:false,zoomControl:true,attributionControl:true}).setView((typeof CITY!=='undefined'&&CITY.center)||[55.028,82.92],(typeof CITY!=='undefined'&&CITY.zoom)||12);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap, © CARTO'}).addTo(M.map);
-  M.layer=L.layerGroup().addTo(M.map);M.ready=true;
+  M.layer=(L.markerClusterGroup?L.markerClusterGroup({maxClusterRadius:46,disableClusteringAtZoom:16,spiderfyOnMaxZoom:true,showCoverageOnHover:false}):L.layerGroup()).addTo(M.map);M.ready=true;
   syncMap(filtered());fitMap();
 }
 function syncMap(list){
@@ -530,7 +533,7 @@ if(Photo.pending){
 /* ===== Дозаполнение фото: поиск в Wikimedia Commons ===== */
 (function(){
   if(window.__m4Fill)return;
-  var BUDGET=44,used=0;
+  var BUDGET=190,used=0;
   var CATQ={'Погулять':'city park alley trees','Поесть':'restaurant food table','Вдвоём':'theatre auditorium','С детьми':'children museum interactive','Поработать':'library reading room','Необычное':'science museum exhibit','Полезное':'grocery store shelves','Активно':'outdoor workout bars'};
   function clean(v){try{return stripHtml(v)}catch(e){return String(v||'').replace(/<[^>]*>/g,'').trim()}}
   async function csearch(q){
