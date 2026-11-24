@@ -597,7 +597,9 @@ if(Photo.pending){
       }
     }
   }
+  window.__m4One=one;
   window.__m4Fill=async function(d){
+    if(window.__m4Lazy)return;
     if(!d||!d.places||typeof PLACES==='undefined')return;
     var missing=PLACES.filter(function(p){return !d.places[p.id]});
     if(!missing.length)return;
@@ -736,7 +738,7 @@ function apply(){
  var k=vb.w/cw();
  [].forEach.call(gPin.children,function(el){var px=el.getAttribute('data-x'),py=el.getAttribute('data-y');el.setAttribute('transform','translate('+px+','+py+') scale('+k.toFixed(4)+')')});
  [].forEach.call(gMe.children,function(el){var px=el.getAttribute('data-x'),py=el.getAttribute('data-y');el.setAttribute('transform','translate('+px+','+py+') scale('+k.toFixed(4)+')')});
- drawLabels(k);drawScale(k);
+ if(!drag)drawLabels(k);drawScale(k);
  gMetro.style.display=lay.metro?'':'none';
  gPark.style.display=lay.parks?'':'none';
 }
@@ -833,7 +835,7 @@ svg.addEventListener('pointermove',function(e){
    tip.style.top=Math.max(8,e.clientY-r.top-38)+'px';tip.classList.add('on');}}
  else tip.classList.remove('on');
 });
-function up(e){delete ptr[e.pointerId];if(Object.keys(ptr).length<2)pinch=null;if(!Object.keys(ptr).length){drag=null;svg.classList.remove('grab')}}
+function up(e){delete ptr[e.pointerId];if(Object.keys(ptr).length<2)pinch=null;if(!Object.keys(ptr).length){drag=null;svg.classList.remove('grab');apply()}}
 svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);svg.addEventListener('pointerleave',function(e){up(e);tip.classList.remove('on')});
 svg.addEventListener('dblclick',function(e){var r=box.getBoundingClientRect(),mx=(e.clientX-r.left)/r.width,my=(e.clientY-r.top)/r.height;
  var nw=vb.w*0.6,wx=vb.x+vb.w*mx,wy=vb.y+vb.h*my;setView(wx-nw*mx,wy-nw*ch()/cw()*my,nw,true)});
@@ -966,4 +968,82 @@ document.addEventListener('submit',function(e){
       if(b)b.click();
     });
   }
+})();
+
+/* ===== Фото по мере просмотра, экономия трафика ===== */
+(function(){
+if(window.__m4lazyBoot)return;window.__m4lazyBoot=1;
+window.__m4Lazy=true;
+if(typeof PLACES==='undefined')return;
+var c=navigator.connection||{},et=c.effectiveType||'';
+var slow=c.saveData===true||et==='slow-2g'||et==='2g'||(typeof c.downlink==='number'&&c.downlink>0&&c.downlink<0.6);
+var enabled=!slow, MAX=slow?1:2;
+if(slow)document.documentElement.classList.add('m4-slow');
+var KEY='m4.ph.lazy';
+function rd(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
+function wr(){try{localStorage.setItem(KEY,JSON.stringify(cache))}catch(e){}}
+var cache=rd(),hitCache=0;
+PLACES.forEach(function(p){var h=cache[p.id];if(h&&h.photo){p.photo=h.photo;p.credit=h.credit;hitCache++}});
+if(slow){window.__m4Limit=12;window.__m4Sig=null}
+if((hitCache||slow)&&typeof render==='function')render();
+var q=[],active=0,seen={};
+function paint(p){
+ var cov=document.querySelector('.card[data-id="'+p.id+'"] .cover');
+ if(cov&&!cov.querySelector('img.ph')){
+  var im=new Image();im.className='ph fade';im.src=p.photo;im.alt='';im.loading='lazy';im.decoding='async';
+  im.setAttribute('fetchpriority','low');im.onerror=function(){im.remove()};
+  var sc=cov.querySelector('.scrim');if(sc)cov.insertBefore(im,sc);else cov.appendChild(im);
+ }
+ if(typeof currentId!=='undefined'&&currentId===p.id){
+  var dc=document.getElementById('pdCover');
+  if(dc&&!dc.querySelector('img.ph')){var i2=new Image();i2.className='ph fade';i2.src=p.photo;i2.alt='';i2.decoding='async';i2.onerror=function(){i2.remove()};dc.appendChild(i2)}
+ }
+}
+function pump(){
+ if(!enabled||navigator.onLine===false)return;
+ if(document.hidden){setTimeout(pump,1500);return}
+ while(active<MAX&&q.length){
+  let p=q.shift();
+  if(seen[p.id]||p.photo)continue;
+  seen[p.id]=1;active++;
+  var out={};
+  Promise.resolve(window.__m4One?window.__m4One(p,out):null).then(function(){
+   var h=out[p.id];
+   if(h&&h.photo){p.photo=h.photo;p.credit=h.credit;cache[p.id]=h;wr();paint(p)}
+  }).catch(function(){}).then(function(){active--;pump()});
+ }
+}
+var io2=('IntersectionObserver'in window)?new IntersectionObserver(function(es){
+ es.forEach(function(e){
+  if(!e.isIntersecting)return;
+  var el=e.target;io2.unobserve(el);
+  var id=el.getAttribute('data-id');
+  var p=PLACES.filter(function(x){return x.id===id})[0];
+  if(!p||p.photo||seen[id])return;
+  q.push(p);pump();
+ });
+},{rootMargin:'400px 0px'}):null;
+function scan(){
+ if(!io2||!enabled)return;
+ var cards=document.querySelectorAll('.card[data-id]');
+ for(var i=0;i<cards.length;i++){
+  var id=cards[i].getAttribute('data-id');
+  var p=PLACES.filter(function(x){return x.id===id})[0];
+  if(p&&!p.photo&&!seen[id])io2.observe(cards[i]);
+ }
+}
+var g=document.getElementById('grid');
+if(g&&'MutationObserver'in window)new MutationObserver(scan).observe(g,{childList:true});
+var head=document.querySelector('.results-head'),btn=null;
+if(head){
+ btn=document.createElement('button');btn.type='button';btn.className='m4net';btn.id='m4net';
+ var lbl=function(){btn.textContent=enabled?'Фото: авто':'Фото: выкл · включить';btn.classList.toggle('off',!enabled);btn.title=enabled?'Фото подгружаются при прокрутке':'Экономия трафика: фото не грузятся'};
+ lbl();
+ btn.addEventListener('click',function(){enabled=!enabled;lbl();if(enabled){scan();pump()}if(typeof toast==='function')toast(enabled?'Фото будут подгружаться при прокрутке':'Фото отключены — экономим трафик')});
+ head.appendChild(btn);
+}
+window.addEventListener('online',function(){if(enabled)pump()});
+window.addEventListener('offline',function(){enabled=false;if(btn){btn.textContent='Фото: нет сети';btn.classList.add('off')}});
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&enabled)pump()});
+scan();
 })();
