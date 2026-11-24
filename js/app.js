@@ -610,3 +610,41 @@ if(Photo.pending){
   var st=document.getElementById('savedTgl'),sb=document.getElementById('savedBtn');
   if(st&&sb)st.addEventListener('click',function(){sb.click();});
 })();
+
+/* ===== Умный поиск: раскладываем живой запрос в фильтры ===== */
+function m4Parse(raw){
+  var q=(raw||'').toLowerCase(),sets={},sum=[];
+  function has(list){for(var i=0;i<list.length;i++){if(q.indexOf(list[i])>=0)return true;}return false;}
+  if(has(['вдвоём','вдвоем','свидание','для двоих','на двоих','парой','романтик'])){sets.company='two';sum.push('вдвоём');}
+  else if(has(['с детьми','с ребёнком','с ребенком','детям','детский','с малыш'])){sets.company='kids';sum.push('с детьми');}
+  else if(has(['с друзьями','друзьями','компанией','с другом'])){sets.company='friends';sum.push('с друзьями');}
+  else if(has(['один','одна','соло','наедине'])){sets.company='solo';sum.push('в одиночку');}
+  if(has(['тих','спокойн','без суеты','уют'])){sets.mood='quiet';sum.push('без суеты');}
+  else if(has(['необычн','оригинальн','вау'])){sets.mood='unusual';sum.push('необычное');}
+  else if(has(['подвига','активн','спорт'])){sets.mood='active';sum.push('подвигаться');}
+  if(has(['бесплатн','без денег','даром','не платить'])){sets.budget='free';sum.push('бесплатно');}
+  else{var bm=q.match(/до[^\d]*(\d{2,4})/)||q.match(/(\d{3,4})\s*(?:₽|руб)/)||q.match(/(\d{3,4})/);
+    if(bm){var n=+bm[1],tier=n<=500?'500':(n<=1000?'1000':'2000');sets.budget=tier;sum.push('до '+tier+' ₽');}}
+  if(has(['в помещении','под крышей','в тепле','внутри','дождь','дожд','холодно'])){sets.weather='in';sum.push('под крышей');}
+  else if(has(['на улице','снаружи','на воздухе','прогулк','погулять'])){sets.weather='out';sum.push('на улице');}
+  if(has(['открыто','работает сейчас','прямо сейчас'])){sets.open=true;sum.push('открыто сейчас');}
+  else if(has([' сейчас'])||/\bсейчас\b/.test(q)){sets.open=true;sum.push('открыто сейчас');}
+  if(has(['поесть','голодн','обед','ужин','кофе','кафе','ресторан','перекус','еда'])){sets.tag='eat';sum.push('поесть');}
+  else if(has(['погулять','пройтись','парк'])){sets.tag='walk';sum.push('погулять');}
+  else if(has(['поработа','ноутбук','офис','учиться','учёба','учеба','коворкинг'])){sets.tag='work';sum.push('поработать');}
+  return {matched:sum.length>0,sets:sets,summary:sum.join(' · ')};
+}
+function m4Smart(q){
+  q=(q||'').trim();
+  S.tag='all';S.company='any';S.mood='any';S.budget='any';S.weather='any';S.open=false;S.col=null;S.savedOnly=false;
+  var r=m4Parse(q);
+  if(r.matched){
+    Object.assign(S,r.sets);S.q='';
+    var qi=document.getElementById('q');if(qi)qi.value='';
+    render();goPlaces();toast('Понял так: '+r.summary);
+  }else{S.q=q;render();goPlaces();}
+}
+document.addEventListener('submit',function(e){
+  var f=e.target;if(f&&f.id==='searchForm'){e.preventDefault();e.stopPropagation();m4Smart(document.getElementById('q').value);}
+},true);
+(function(){var qi=document.getElementById('q');if(qi)qi.placeholder='Например: тихое место вдвоём до 500, чтобы было открыто';})();
