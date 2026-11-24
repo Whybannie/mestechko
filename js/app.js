@@ -909,3 +909,40 @@ document.addEventListener('submit',function(e){
     m4Send('Месте4ко · '+(typeof CITY!=='undefined'?CITY.name:'')+' — ошибка',{место:pl?pl.name:id,что:rec.type,описание:rec.text}).catch(function(){});
   }
 },true);
+
+/* ===== Отправка форм на почту через FormSubmit ===== */
+(function(){
+  function wire(id, okMsg){
+    var f=document.getElementById(id);
+    if(!f||!f.action)return;
+    f.addEventListener('submit',function(e){
+      e.preventDefault();e.stopImmediatePropagation();
+      var fd=new FormData(f),btn=f.querySelector('button[type=submit]');
+      if(btn){btn.disabled=true;btn.textContent='Отправляем…'}
+      fetch(f.action,{method:'POST',body:fd,headers:{'Accept':'application/json'}})
+        .then(function(r){return r.json().catch(function(){return {ok:r.ok}})})
+        .then(function(data){
+          if(btn){btn.disabled=false;btn.textContent='Отправить'}
+          if(data&&(data.ok||data.success)){
+            if(toast)toast(okMsg);
+            var key='m4.'+id,arr=[];
+            try{arr=JSON.parse(localStorage.getItem(key)||'[]')}catch(_){arr=[]}
+            var o=Object.fromEntries(fd.entries());delete o._subject;delete o._template;delete o._captcha;delete o._next;delete o._autoresponse;
+            o.at=new Date().toISOString();arr.push(o);
+            try{localStorage.setItem(key,JSON.stringify(arr))}catch(_){}
+            if(id==='suggestForm'){f.style.display='none';var ok=document.getElementById('suggestOk');if(ok)ok.classList.add('show')}
+            if(id==='reportForm'){
+              var dlg=f.closest('dialog');if(dlg)dlg.close();
+              var rp=document.getElementById('rpPlace');
+              if(rp){var rid=rp.value;var rep={};try{rep=JSON.parse(localStorage.getItem('m4.reports')||'{}')}catch(_){}
+              rep[rid]=true;try{localStorage.setItem('m4.reports',JSON.stringify(rep))}catch(_){}
+              if(typeof render==='function')render();}
+            }
+          }else{if(toast)toast('Не удалось отправить. Попробуйте ещё раз.')}
+        })
+        .catch(function(){if(btn){btn.disabled=false;btn.textContent='Отправить'}if(toast)toast('Ошибка сети. Проверьте интернет.')});
+    },true);
+  }
+  wire('suggestForm','Спасибо! Заявка ушла на почту редакции.');
+  wire('reportForm','Спасибо! Сообщение ушло на почту редакции.');
+})();
