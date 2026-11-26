@@ -25,7 +25,7 @@
 
   /* ── умный подбор ── */
   function smartPick(){
-    var now=new Date(),h=now.getHours(),dow=now.getDay(),weekend=dow===0||dow===6;
+    var now=new Date(),ck=(typeof cityClock==='function')?cityClock():{day:now.getDay(),h:now.getHours()},h=Math.floor(ck.h),dow=ck.day,weekend=dow===0||dow===6;
     var slot=h>=6&&h<11?'morning':h<16&&h>=11?'day':h>=16&&h<22?'evening':'night';
     var tot=0,k;for(k in prof.cat)tot+=prof.cat[k];
     var saved=(typeof S!=='undefined'&&S.saved)?S.saved:new Set();

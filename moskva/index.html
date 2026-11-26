@@ -2,6 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https://*.wikipedia.org https://*.wikimedia.org https://formsubmit.co; form-action 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'; frame-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#FFF6E8">
@@ -23,7 +25,7 @@
 <link rel="stylesheet" href="../css/variants.css?v=2">
 <script src="data.js" defer></script>
 <script src="../js/cities.js" defer></script><script src="../js/mapgeo.js" defer></script>
-<script src="../js/app.js" defer></script>
+<script src="../js/app.js?v=4" defer></script>
 <script src="../js/variants.js?v=2" defer></script>
 <script src="../js/smart.js?v=3" defer></script>
 </head>
@@ -261,11 +263,12 @@
 — редакция Месте4ко">
     <h3 id="sgTitle">Предложить место</h3>
     <p class="lead">Непроверенные адреса не публикуем: сначала съходим сами. Напрямую: <a href="mailto:meste4ko.support@gmail.com">meste4ko.support@gmail.com</a></p>
-    <input class="field" name="name" placeholder="Название" required>
-    <input class="field" name="addr" placeholder="Адрес или район" required>
+    <input class="field" name="name" placeholder="Название" aria-label="Название места" maxlength="120" required>
+    <input class="field" name="addr" placeholder="Адрес или район" aria-label="Адрес или район" maxlength="160" required>
     <select class="field" name="cat" required><option value="" disabled selected>Раздел</option><option>Поесть</option><option>Погулять</option><option>С детьми</option><option>Вдвоём</option><option>Поработать</option><option>Полезное</option><option>Другое</option></select>
-    <textarea class="field" name="story" placeholder="Что там делать, сколько стоит, когда лучше идти?" required></textarea>
-    <input class="field" name="contact" placeholder="Telegram или почта — по желанию">
+    <textarea class="field" name="story" placeholder="Что там делать, сколько стоит, когда лучше идти?" aria-label="Описание места" maxlength="1500" required></textarea>
+    <input class="field" name="contact" placeholder="Telegram или почта — по желанию" aria-label="Контакт для связи, по желанию" maxlength="120" autocomplete="off">
+    <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="form-row"><button class="btn btn-line" type="button" data-close>Отмена</button><button class="btn btn-red" type="submit">Отправить</button></div>
   </form>
   <div class="ok-panel" id="suggestOk">
@@ -288,7 +291,8 @@
     <p class="lead">Место получит статус «На проверке», пока не перепроверим.</p>
     <select class="field" id="rpPlace" aria-label="Место" required></select>
     <select class="field" id="rpType" aria-label="Что не так" required><option value="" disabled selected>Что не так?</option><option>Закрылось</option><option>Изменились цены</option><option>Другой график</option><option>Неверный адрес</option><option>Особенности не те</option><option>Другое</option></select>
-    <textarea class="field" id="rpText" placeholder="Как на самом деле?" required></textarea>
+    <textarea class="field" id="rpText" placeholder="Как на самом деле?" aria-label="Как на самом деле" maxlength="1000" required></textarea>
+    <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="form-row"><button class="btn btn-line" type="button" data-close>Отмена</button><button class="btn btn-red" type="submit">Отправить</button></div>
   </form>
 </dialog>

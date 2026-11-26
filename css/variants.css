@@ -124,3 +124,6 @@ html[data-look="1"] .sm-card,html[data-look="3"] .sm-card{border:1px solid rgba(
 :root[data-m4phase="night"] .cat-tag,:root[data-m4phase="night"] .sm-cat{background:rgba(12,20,36,.62)!important;color:#E9EFFB!important;border-color:rgba(233,239,251,.14)!important}
 :root[data-m4phase="night"] .sm-why{color:#5FE0CC}
 :root[data-m4phase="night"][data-look="1"] .dlg-x,:root[data-m4phase="night"][data-look="3"] .dlg-x{background:rgba(12,20,36,.6);border-color:rgba(233,239,251,.14)}
+
+/* ловушка для ботов в формах: не видна людям */
+.hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0;pointer-events:none}

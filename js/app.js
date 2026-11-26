@@ -2,6 +2,9 @@
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+/* Текст и ссылки с чужих серверов (Викисклад) вставляем только как текст и только https-ссылки */
+const escH=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl=u=>/^https:\/\/([a-z0-9-]+\.)*(wikimedia\.org|wikipedia\.org)\//i.test(String(u||''))?String(u).replace(/"/g,'%22'):'#';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CK=(typeof CITY!=='undefined'&&CITY.slug)?('m4.'+CITY.slug):'m4';
 const EDITOR=(typeof CITY!=='undefined'&&CITY.editor)||'Редакция Месте4ко';
@@ -14,14 +17,30 @@ const fmtDate=iso=>{const d=new Date(iso+'T12:00:00');return d.getDate()+' '+MON
 const fmtShort=iso=>{const d=new Date(iso+'T12:00:00');return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')};
 function plural(n,f){const m=n%100;if(m>=11&&m<=14)return f[2];const k=n%10;return k===1?f[0]:k>=2&&k<=4?f[1]:f[2]}
 const pw=n=>plural(n,['место','места','мест']);
+/* Время в городе страницы, а не на устройстве посетителя (иначе из Москвы «Открыто» в Новосибирске врёт на 4 часа) */
+function cityClock(){
+  const n=new Date(),tz=(typeof CITY!=='undefined'&&CITY.tz)||null;
+  if(tz){try{
+    const parts=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',weekday:'short',hour12:false}).formatToParts(n);
+    const g=t=>(parts.find(x=>x.type===t)||{}).value;
+    const day=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(g('weekday'));
+    const hh=+g('hour')%24,mm=+g('minute');
+    if(day>=0&&!isNaN(hh))return {day,h:hh+mm/60};
+  }catch(e){}}
+  if(typeof CITY!=='undefined'&&typeof CITY.utc==='number'){const u=new Date(n.getTime()+n.getTimezoneOffset()*60000+CITY.utc*3600000);return {day:u.getDay(),h:u.getHours()+u.getMinutes()/60}}
+  return {day:n.getDay(),h:n.getHours()+n.getMinutes()/60};
+}
 function openNow(p){
   if(p.hours==='24')return true;
   if(p.hours==='afisha')return null;
-  const n=new Date(),day=n.getDay(),h=n.getHours()+n.getMinutes()/60,{o,c,off=[]}=p.hours;
-  if(off.includes(day))return false;
-  if(c===24)return h>=o;
-  if(c<=o)return h>=o||h<c;
-  return h>=o&&h<c;
+  const {day,h}=cityClock(),{o,c,off=[]}=p.hours;
+  if(c===24)return !off.includes(day)&&h>=o;
+  if(c<=o){ /* работает через полночь: после полуночи действует график вчерашнего дня */
+    if(h>=o)return !off.includes(day);
+    if(h<c)return !off.includes((day+6)%7);
+    return false;
+  }
+  return !off.includes(day)&&h>=o&&h<c;
 }
 const isLate=p=>p.hours==='24'||(p.hours!=='afisha'&&(p.hours.c===24||p.hours.c<=p.hours.o||p.hours.c>22));
 const openBadge=p=>{const o=openNow(p);return o===true?'<span class="pill o">Открыто</span>':o===null?'<span class="pill o afisha">По афише</span>':'<span class="pill o closed">Закрыто</span>'};
@@ -74,7 +93,7 @@ function applyPhotos(d){
 function coverInner(p,eager){
   const c=catOf(p);
   const typo=`<span class="typo" style="--t1:${c.t};--t2:${c.t}"><span class="tk">${p.cat||''}</span><span class="tn">${p.name}</span><span class="tr" style="background:${c.c}"></span></span>`;
-  return typo+(p.photo?`<img class="ph" src="${p.photo}" alt="" ${eager?'':'loading="lazy"'} decoding="async" onerror="this.remove()">`:'')+((!p.photo&&Photo.pending)?'<span class="skel"></span>':'')+'<span class="scrim"></span>';
+  return typo+(p.photo?`<img class="ph" src="${safeUrl(p.photo)}" alt="" ${eager?'':'loading="lazy"'} decoding="async" onerror="this.remove()">`:'')+((!p.photo&&Photo.pending)?'<span class="skel"></span>':'')+'<span class="scrim"></span>';
 }
 
 /* фильтры */
@@ -177,7 +196,7 @@ function renderSources(){
   const shot=PLACES.filter(p=>p.photo).length;
   $('#srcLead').textContent='Снимки из Wikipedia и Wikimedia Commons, свободные лицензии. Найдено '+shot+' из '+PLACES.length+' мест. Остальные снимем сами.';
   $('#srcList').innerHTML=PLACES.map((p,i)=>p.photo&&p.credit?
-    `<li><img class="th" src="${p.photo}" alt="" loading="lazy" onerror="this.remove()"><div><b>${p.name}</b><span>${p.credit.author} · ${p.credit.license}${p.credit.note?' · '+p.credit.note:''}</span><a href="${p.credit.page}" target="_blank" rel="noopener">Источник</a></div></li>`:
+    `<li><img class="th" src="${safeUrl(p.photo)}" alt="" loading="lazy" onerror="this.remove()"><div><b>${p.name}</b><span>${escH(p.credit.author)} · ${escH(p.credit.license)}${p.credit.note?' · '+escH(p.credit.note):''}</span><a href="${safeUrl(p.credit.page)}" target="_blank" rel="noopener">Источник</a></div></li>`:
     `<li><span class="n">${i+1}</span><div><b>${p.name}</b><span>Фото ещё нет</span></div></li>`).join('');
 }
 function saveState(){store.set(CK+'.saved',[...S.saved]);store.set(CK+'.reports',S.reports);$('#savedCount').textContent=S.saved.size}
@@ -251,7 +270,7 @@ function openPlace(id){
   $('#pdBudget').textContent=p.budgetText;$('#pdBest').textContent=p.best;$('#pdHours').textContent=p.hoursText;$('#pdFeat').textContent=p.feat.join(', ');
   const st=$('#pdStamp');
   if(p.draft){st.className='stamp recheck';st.textContent='Черновик'}else if(recheck(p)){st.className='stamp recheck';st.textContent='На проверке'}else{st.className='stamp';st.textContent='Проверено '+fmtDate(p.checked)}
-  $('#pdSrc').innerHTML=p.src+(p.credit?` · <a href="${p.credit.page}" target="_blank" rel="noopener">фото: ${p.credit.license}</a>`:'');
+  $('#pdSrc').innerHTML=p.src+(p.credit?` · <a href="${safeUrl(p.credit.page)}" target="_blank" rel="noopener">фото: ${escH(p.credit.license)}${p.credit.note?' · '+escH(p.credit.note):''}</a>`:'');
   $('#pdRoute').href=placeRoute(p);$('#pdMap').href=mapUrl(p);pdSave();showDialog($('#placeDlg'));
 }
 function openReport(id){
@@ -892,19 +911,34 @@ window.m4Send=function(subject,data){
   var payload=Object.assign({_subject:subject,_template:'table',_captcha:'false'},data||{});
   return fetch('https://formsubmit.co/ajax/'+encodeURIComponent(window.__M4_MAIL),{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()});
 };
+/* Защита от спама: ловушка для ботов (_honey), не чаще раза в 30 секунд и не больше 10 писем в сутки с одного браузера */
+function m4Gate(f){
+  var hp=f.querySelector('[name="_honey"]');if(hp&&hp.value){return 'bot'}
+  var log=store.get('m4.sendlog',[]),now=Date.now();log=log.filter(function(t){return now-t<864e5});
+  if(log.length&&now-log[log.length-1]<3e4)return 'fast';
+  if(log.length>=10)return 'day';
+  log.push(now);store.set('m4.sendlog',log);return '';
+}
+function m4Clip(v,n){return String(v==null?'':v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'').trim().slice(0,n)}
 document.addEventListener('submit',function(e){
   var f=e.target;
+  if(f&&(f.id==='suggestForm'||f.id==='reportForm')){
+    var g=m4Gate(f);
+    if(g){e.preventDefault();e.stopPropagation();
+      if(g==='bot'){if(f.id==='reportForm'){var dl=$('#reportDlg');if(dl)dl.close()}else{f.style.display='none';var ok0=$('#suggestOk');if(ok0)ok0.classList.add('show')}return}
+      toast(g==='fast'?'Подождите полминуты и отправьте ещё раз':'Сегодня отправлено уже много сообщений — напишите нам на почту');return}
+  }
   if(f&&f.id==='suggestForm'){e.preventDefault();e.stopPropagation();
-    var d={};new FormData(f).forEach(function(v,k){d[k]=v});
-    var a=store.get('m4.suggests',[]);a.push(Object.assign({at:new Date().toISOString()},d));store.set('m4.suggests',a);
+    var d={};new FormData(f).forEach(function(v,k){if(k.charAt(0)!=='_')d[k]=m4Clip(v,k==='story'?1500:160)});
+    var a=store.get('m4.suggests',[]);a.push({at:new Date().toISOString(),name:d.name,addr:d.addr});store.set('m4.suggests',a.slice(-20)); /* контакт человека в браузере не храним */
     var btn=f.querySelector('button[type=submit]');if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
     m4Send('Месте4ко · '+(typeof CITY!=='undefined'?CITY.name:'')+' — предложение места',Object.assign({город:(typeof CITY!=='undefined'?CITY.name:'')},d))
       .then(function(){f.style.display='none';var ok=$('#suggestOk');if(ok)ok.classList.add('show');toast('Заявка отправлена редакции');})
       .catch(function(){if(btn){btn.disabled=false;btn.textContent='Отправить';}toast('Не отправилось — нет связи. Данные сохранили, попробуйте позже','Почта',function(){location.href='mailto:'+window.__M4_MAIL});});
   }
   else if(f&&f.id==='reportForm'){e.preventDefault();e.stopPropagation();
-    var id=$('#rpPlace').value,rec={id:id,type:$('#rpType').value,text:$('#rpText').value,at:new Date().toISOString()};
-    var arr=store.get('m4.reportList',[]);arr.push(rec);store.set('m4.reportList',arr);
+    var id=$('#rpPlace').value,rec={id:id,type:m4Clip($('#rpType').value,60),text:m4Clip($('#rpText').value,1000),at:new Date().toISOString()};
+    var arr=store.get('m4.reportList',[]);arr.push(rec);store.set('m4.reportList',arr.slice(-30));
     S.reports[id]=true;saveState();
     $('#reportDlg').close();render();
     toast('Спасибо. Место помечено «На проверке»');
