@@ -85,3 +85,42 @@ html[data-look="2"] .stamp{background:var(--teal-t);border-color:transparent}
 .m4look button{color:#fff;padding:9px 14px;border-radius:999px;min-height:40px;white-space:nowrap}
 .m4look button[aria-pressed="true"]{background:#fff;color:var(--ink)}
 @media (max-width:760px){.m4look{bottom:calc(84px + env(safe-area-inset-bottom));max-width:calc(100% - 20px);overflow-x:auto}.m4look span{display:none}.m4look button{padding:9px 11px;font-size:12.5px}}
+
+/* ───────── Умный подбор и Популярное (js/smart.js) ───────── */
+.sm-sec{padding:44px 0 8px}
+.sm-sec .sec-head{margin-bottom:18px}
+.sm-rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:14px;overflow-x:auto;padding:4px 2px 18px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.sm-card{scroll-snap-align:start;text-align:left;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;min-height:100%;transition:transform .18s,box-shadow .18s}
+.sm-card:hover{transform:translateY(-3px);box-shadow:var(--sh2)}
+.sm-ph{position:relative;display:block;height:132px;background:var(--ct,var(--teal-t));overflow:hidden}
+.sm-ph img{width:100%;height:100%;object-fit:cover}
+.sm-cat,.sm-ad{position:absolute;top:10px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:999px;line-height:1.3}
+.sm-cat{left:10px;background:rgba(255,255,255,.72);backdrop-filter:blur(12px) saturate(170%);-webkit-backdrop-filter:blur(12px) saturate(170%);color:var(--ink);border:1px solid rgba(255,255,255,.8)}
+.sm-ad{right:10px;background:var(--ink);color:#fff}
+.sm-b{display:flex;flex-direction:column;gap:7px;padding:14px 16px 16px;flex:1}
+.sm-b b{font-family:var(--disp);font-size:19px;line-height:1.2}
+.sm-lead{font-size:13.5px;color:var(--ink2);line-height:1.45}
+.sm-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
+.sm-meta>span{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--paper);color:var(--ink)}
+.sm-meta .sm-open{background:var(--ok-t);color:var(--ok)}
+.sm-meta .sm-open.off{background:#EFF1F6;color:var(--dim)}
+.sm-why{font-size:12px;font-weight:700;color:var(--teal-ink);line-height:1.4}
+.sm-biz{font-size:14px;color:var(--ink2);margin-top:2px}
+html[data-look="1"] .sm-card,html[data-look="3"] .sm-card{border:1px solid rgba(255,255,255,.8);box-shadow:0 0 0 1px rgba(23,43,77,.05),0 10px 30px rgba(23,43,77,.08)}
+.sm-smart .sec-num{color:var(--teal-ink)}
+@media (max-width:700px){.sm-rail{grid-auto-columns:78%}.sm-sec{padding:34px 0 4px}}
+
+/* ───────── Ночная тема (data-m4phase="night") + стекло ───────── */
+:root[data-m4phase="night"][data-look="1"],:root[data-m4phase="night"][data-look="3"]{--glass:rgba(22,34,60,.55);--glass-b:rgba(233,239,251,.12);--glass-sh:0 1px 0 rgba(233,239,251,.08) inset,0 0 0 1px rgba(0,0,0,.25),0 12px 34px rgba(0,0,0,.35)}
+:root[data-m4phase="night"][data-look="1"] body::after,:root[data-m4phase="night"][data-look="3"] body::after{
+  background:
+    radial-gradient(40vmax 32vmax at 10% 22%,rgba(25,183,165,.16),transparent 70%),
+    radial-gradient(36vmax 30vmax at 90% 6%,rgba(120,140,255,.18),transparent 70%),
+    radial-gradient(38vmax 32vmax at 80% 80%,rgba(255,107,94,.10),transparent 70%)}
+:root[data-m4phase="night"][data-look="1"] .hd,:root[data-m4phase="night"][data-look="3"] .hd,
+:root[data-m4phase="night"][data-look="1"] .mnav,:root[data-m4phase="night"][data-look="3"] .mnav{background:rgba(12,20,36,.62)!important;border-color:rgba(233,239,251,.10)!important}
+:root[data-m4phase="night"][data-look="1"] .card,:root[data-m4phase="night"][data-look="3"] .card,
+:root[data-m4phase="night"] .sm-card{border-color:rgba(233,239,251,.10);box-shadow:0 0 0 1px rgba(0,0,0,.25),0 10px 30px rgba(0,0,0,.30)}
+:root[data-m4phase="night"] .cat-tag,:root[data-m4phase="night"] .sm-cat{background:rgba(12,20,36,.62)!important;color:#E9EFFB!important;border-color:rgba(233,239,251,.14)!important}
+:root[data-m4phase="night"] .sm-why{color:#5FE0CC}
+:root[data-m4phase="night"][data-look="1"] .dlg-x,:root[data-m4phase="night"][data-look="3"] .dlg-x{background:rgba(12,20,36,.6);border-color:rgba(233,239,251,.14)}
