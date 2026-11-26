@@ -67,7 +67,7 @@ async function resolvePhotos(){
 }
 function applyPhotos(d){
   if(!d)return;
-  PLACES.forEach(p=>{const h=d.places&&d.places[p.id];if(h){p.photo=h.photo;p.credit=h.credit}else{delete p.photo;delete p.credit}});
+  PLACES.forEach(p=>{const pin=(typeof PHOTO_PIN!=='undefined')&&PHOTO_PIN[p.id];const h=pin||(d.places&&d.places[p.id]);if(h){p.photo=h.photo;p.credit=h.credit}else{delete p.photo;delete p.credit}});
   if(d.hero){Photo.hero.photo=d.hero.photo;Photo.hero.credit=d.hero.credit}
   if(d.city){Photo.city.photo=d.city.photo;Photo.city.credit=d.city.credit}
 }
@@ -581,6 +581,7 @@ if(Photo.pending){
     return best;
   }
   async function one(p,out){
+    if(typeof PHOTO_PIN!=='undefined'&&PHOTO_PIN[p.id]){out[p.id]=PHOTO_PIN[p.id];return}
     var NAME=(typeof PHOTO_NAME!=='undefined')?PHOTO_NAME:{};
     var TYPE=(typeof PHOTO_TYPE!=='undefined')?PHOTO_TYPE:{};
     var cityName=(typeof CITY!=='undefined'&&CITY.name)?CITY.name:'';
@@ -983,6 +984,7 @@ var KEY='m4.ph.lazy';
 function rd(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
 function wr(){try{localStorage.setItem(KEY,JSON.stringify(cache))}catch(e){}}
 var cache=rd(),hitCache=0;
+if(typeof PHOTO_PIN!=='undefined')PLACES.forEach(function(p){var h=PHOTO_PIN[p.id];if(h){p.photo=h.photo;p.credit=h.credit;delete cache[p.id]}});
 PLACES.forEach(function(p){var h=cache[p.id];if(h&&h.photo){p.photo=h.photo;p.credit=h.credit;hitCache++}});
 if(slow){window.__m4Limit=12;window.__m4Sig=null}
 if((hitCache||slow)&&typeof render==='function')render();
