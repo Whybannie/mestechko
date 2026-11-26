@@ -1,0 +1,87 @@
+/* Месте4ко · variants.css — три варианта улучшения текущего дизайна.
+   Включаются ссылкой ?look=1|2|3 (см. js/variants.js). Без параметра сайт выглядит как раньше.
+   1 — «Стекло»: жидкое стекло в меру; 2 — «Краски»: цвет категорий; 3 — «Стекло + краски». */
+
+/* ───────── Общее для всех трёх: убираем «шаблонные» приёмы ───────── */
+html[data-look] .minus{border-left:0;border-radius:14px;padding:11px 14px 11px 40px;position:relative;background:var(--coral-t)}
+html[data-look] .minus::before{content:"−";position:absolute;left:12px;top:9px;width:20px;height:20px;border-radius:50%;background:var(--coral-ink);color:#fff;font-weight:800;font-size:15px;line-height:20px;text-align:center}
+html[data-look] .card .foot,html[data-look] .dlg-verify{border-top-style:solid}
+html[data-look] .stamp{border-style:solid;border-width:1px;border-radius:999px;padding:5px 10px}
+html[data-look] .card{border-radius:24px}
+html[data-look] .btn{border-radius:14px}
+html[data-look] .btn-sm{border-radius:12px}
+html[data-look] dialog{border-radius:28px}
+html[data-look] .dlg-cell{border-radius:16px}
+html[data-look] .search{border-radius:20px}
+html[data-look] .route{border-radius:26px}
+html[data-look] .col-feat{border-radius:26px}
+html[data-look] .filters{border-radius:24px}
+html[data-look] .map-wrap{border-radius:24px;overflow:hidden}
+html[data-look] .seg button{border-radius:999px}
+
+/* ───────── 1 и 3: жидкое стекло ───────── */
+html[data-look="1"] body,html[data-look="3"] body{background-color:var(--paper)}
+html[data-look="1"] body::after,html[data-look="3"] body::after{content:"";position:fixed;inset:-10vmax;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(40vmax 32vmax at 10% 22%,rgba(25,183,165,.26),transparent 70%),
+    radial-gradient(36vmax 30vmax at 90% 6%,rgba(255,200,87,.32),transparent 70%),
+    radial-gradient(38vmax 32vmax at 80% 80%,rgba(255,107,94,.20),transparent 70%),
+    radial-gradient(32vmax 28vmax at 18% 90%,rgba(61,107,214,.16),transparent 70%)}
+html[data-look="1"],html[data-look="3"]{--glass:rgba(255,255,255,.5);--glass-b:rgba(255,255,255,.75);--glass-sh:0 1px 0 rgba(255,255,255,.9) inset,0 0 0 1px rgba(23,43,77,.06),0 12px 34px rgba(23,43,77,.10)}
+html[data-look="1"] .hd,html[data-look="3"] .hd{background:rgba(255,252,246,.55)!important;backdrop-filter:blur(22px) saturate(170%);-webkit-backdrop-filter:blur(22px) saturate(170%);border-bottom:1px solid rgba(255,255,255,.7)!important;box-shadow:0 1px 0 rgba(23,43,77,.05),0 8px 30px rgba(23,43,77,.06)}
+html[data-look="1"] :is(.search,.chip:not(.on),.issue,.city-pick,.saved-btn,.filters,.map-side,.results-head .m4net,.col,.route),
+html[data-look="3"] :is(.search,.chip:not(.on),.issue,.city-pick,.saved-btn,.filters,.map-side,.results-head .m4net,.col,.route){
+  background:var(--glass)!important;backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:1px solid var(--glass-b)!important;box-shadow:var(--glass-sh)}
+html[data-look="1"] .chip.on,html[data-look="3"] .chip.on{box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px rgba(23,43,77,.22)}
+html[data-look="1"] .card,html[data-look="3"] .card{border:1px solid rgba(255,255,255,.8);box-shadow:0 0 0 1px rgba(23,43,77,.05),0 10px 30px rgba(23,43,77,.08)}
+html[data-look="1"] .card:hover,html[data-look="3"] .card:hover{box-shadow:0 0 0 1px rgba(23,43,77,.07),0 18px 44px rgba(23,43,77,.14)}
+html[data-look="1"] .cat-tag,html[data-look="3"] .cat-tag{background:rgba(255,255,255,.62)!important;backdrop-filter:blur(12px) saturate(170%);-webkit-backdrop-filter:blur(12px) saturate(170%);border:1px solid rgba(255,255,255,.8);border-radius:999px;padding:6px 10px}
+html[data-look="1"] .dlg-x,html[data-look="3"] .dlg-x{background:rgba(255,255,255,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-color:rgba(255,255,255,.8)}
+html[data-look="1"] dialog::backdrop,html[data-look="3"] dialog::backdrop{background:rgba(23,43,77,.32);backdrop-filter:blur(10px) saturate(140%)}
+html[data-look="1"] .toast,html[data-look="3"] .toast{background:rgba(23,43,77,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px}
+html[data-look="1"] .mnav,html[data-look="3"] .mnav{background:rgba(255,252,246,.62)!important;backdrop-filter:blur(22px) saturate(170%);-webkit-backdrop-filter:blur(22px) saturate(170%);border-top:1px solid rgba(255,255,255,.75)!important}
+html[data-look="1"] :is(.band-amber,.band-ink,.band-blue,.band-teal),html[data-look="3"] :is(.band-amber,.band-ink,.band-blue,.band-teal){background:transparent;border-top-color:transparent}
+html[data-look="1"] .hero,html[data-look="3"] .hero{background:transparent}
+
+/* ───────── 2 и 3: краски категорий ───────── */
+html[data-look="2"] .card,html[data-look="3"] .card{--cc:var(--teal);--ct:var(--teal-t)}
+html[data-look="2"] .card::before,html[data-look="3"] .card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--cc);z-index:3}
+html[data-look="2"] .card .area,html[data-look="3"] .card .area{color:var(--cc-ink,var(--ink2))}
+html[data-look="2"] .card .cat-tag,html[data-look="3"] .card .cat-tag{color:var(--cc-ink,var(--ink))}
+html[data-look="2"] .card .cat-tag::before,html[data-look="3"] .card .cat-tag::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cc);margin-right:6px;vertical-align:1px}
+html[data-look="2"] .chip,html[data-look="3"] .chip{--k:var(--ink2)}
+html[data-look="2"] .chip svg,html[data-look="3"] .chip svg{stroke:var(--k)}
+html[data-look="2"] .chip[data-chip="eat"],html[data-look="3"] .chip[data-chip="eat"]{--k:#C47A14;--kt:#FDF0DA}
+html[data-look="2"] .chip[data-chip="walk"],html[data-look="3"] .chip[data-chip="walk"]{--k:#0E8577;--kt:#E3F4F1}
+html[data-look="2"] .chip[data-chip="warm"],html[data-look="3"] .chip[data-chip="warm"]{--k:#C9463B;--kt:#FFE9E5}
+html[data-look="2"] .chip[data-chip="kids"],html[data-look="3"] .chip[data-chip="kids"]{--k:#3D6BD6;--kt:#E9EEF9}
+html[data-look="2"] .chip[data-chip="two"],html[data-look="3"] .chip[data-chip="two"]{--k:#B8407A;--kt:#FBE7EF}
+html[data-look="2"] .chip[data-chip="work"],html[data-look="3"] .chip[data-chip="work"]{--k:#6B5AB8;--kt:#EEEAF8}
+html[data-look="2"] .chip[data-chip="free"],html[data-look="3"] .chip[data-chip="free"]{--k:#1D7A4F;--kt:#E4F5EC}
+html[data-look="2"] .chip[data-chip="open"],html[data-look="3"] .chip[data-chip="open"]{--k:#1D7A4F;--kt:#E4F5EC}
+html[data-look="2"] .chip[data-chip="coffee"],html[data-look="3"] .chip[data-chip="coffee"]{--k:#8A5A2B;--kt:#F6ECE2}
+html[data-look="2"] .chip[data-chip="friends"],html[data-look="3"] .chip[data-chip="friends"]{--k:#3D6BD6;--kt:#E9EEF9}
+html[data-look="2"] .chip[data-chip="active"],html[data-look="3"] .chip[data-chip="active"]{--k:#C9463B;--kt:#FFE9E5}
+html[data-look="2"] .chip[data-chip="late"],html[data-look="3"] .chip[data-chip="late"]{--k:#4B4FA8;--kt:#ECEBFA}
+html[data-look="2"] .chip[data-chip="unusual"],html[data-look="3"] .chip[data-chip="unusual"]{--k:#6E8F2E;--kt:#EDF4E2}
+html[data-look="2"] .chip[data-chip="cheap"],html[data-look="3"] .chip[data-chip="cheap"]{--k:#8A6110;--kt:#FFF3D9}
+html[data-look="2"] .chip:hover,html[data-look="3"] .chip:hover{border-color:var(--k)!important}
+html[data-look="2"] .chip.on,html[data-look="3"] .chip.on{background:var(--k)!important;border-color:var(--k)!important;color:#fff}
+html[data-look="2"] .chip.on svg,html[data-look="3"] .chip.on svg{stroke:#fff}
+html[data-look="2"] .chip:not(.on){background:var(--kt);border-color:transparent}
+html[data-look="2"] .col .ic,html[data-look="3"] .col .ic{border-radius:14px}
+html[data-look="2"] .col-feat{background:#0E8577}
+html[data-look="2"] .band-amber{background:var(--amber-t)}
+html[data-look="2"] .band-ink,html[data-look="2"] .band-blue{background:var(--blue-t)}
+html[data-look="2"] .band-teal{background:var(--teal-t)}
+html[data-look="2"] .hero{background:radial-gradient(700px 440px at 92% -10%,rgba(255,200,87,.42),transparent 62%),radial-gradient(620px 420px at -8% 24%,rgba(25,183,165,.22),transparent 60%),var(--paper)}
+html[data-look="2"] .stamp{background:var(--teal-t);border-color:transparent}
+
+/* ───────── Переключатель вариантов (виден только по ссылке ?look=…) ───────── */
+.m4look{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px;
+  background:rgba(23,43,77,.82);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);box-shadow:0 12px 34px rgba(23,43,77,.3);color:#fff;font-size:13px;font-weight:700}
+.m4look span{padding:0 10px 0 12px;opacity:.75;white-space:nowrap}
+.m4look button{color:#fff;padding:9px 14px;border-radius:999px;min-height:40px;white-space:nowrap}
+.m4look button[aria-pressed="true"]{background:#fff;color:var(--ink)}
+@media (max-width:760px){.m4look{bottom:calc(84px + env(safe-area-inset-bottom));max-width:calc(100% - 20px);overflow-x:auto}.m4look span{display:none}.m4look button{padding:9px 11px;font-size:12.5px}}
