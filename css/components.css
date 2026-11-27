@@ -626,3 +626,45 @@ html.m4-slow .rv{opacity:1;transform:none;transition:none}
   .rt-line,.rt-dot,.fav-emoji,.btn-fav.on .fav-emoji,.btn-fav:hover .fav-emoji,.btn-fav.pulse{animation:none!important}
   .fav-pop{display:none}
 }
+
+/* ===== Сегментный переключатель «как добираться» ===== */
+.dlg-go{align-items:center}
+.rt-modes{position:relative;display:inline-flex;gap:2px;padding:4px;border-radius:999px;background:var(--paper);border:1px solid var(--line2);box-shadow:inset 0 1px 3px rgba(23,43,77,.09);isolation:isolate}
+.rt-thumb{position:absolute;left:0;top:0;z-index:0;border-radius:999px;opacity:0;pointer-events:none;transition:transform .34s cubic-bezier(.2,.85,.25,1),width .34s cubic-bezier(.2,.85,.25,1),height .2s ease,background .28s ease,box-shadow .28s ease}
+.rt-thumb.ready{opacity:1}
+.rt-modes[data-mode="pedestrian"] .rt-thumb{background:linear-gradient(135deg,#3AD9C4,#12A392);box-shadow:0 6px 18px rgba(25,183,165,.45),inset 0 1px 0 rgba(255,255,255,.35)}
+.rt-modes[data-mode="auto"] .rt-thumb{background:linear-gradient(135deg,#F0553F,#C0392B);box-shadow:0 6px 18px rgba(240,85,63,.45),inset 0 1px 0 rgba(255,255,255,.28)}
+.rt-modes[data-mode="mt"] .rt-thumb{background:linear-gradient(135deg,#4E7BE8,#2A47A8);box-shadow:0 6px 18px rgba(61,107,214,.45),inset 0 1px 0 rgba(255,255,255,.28)}
+.rt-thumb.hit{animation:thumbHit .5s ease-out}
+@keyframes thumbHit{0%{filter:brightness(1.35) saturate(1.2)}100%{filter:none}}
+.rt-modes .rt-mode{position:relative;z-index:1;border:0;background:transparent;box-shadow:none;transform:none;padding:8px 15px;border-radius:999px;font-size:12.5px;font-weight:800;color:var(--ink2);letter-spacing:.01em;transition:color .22s ease}
+.rt-modes .rt-mode:hover{border:0;background:transparent;transform:none;color:var(--ink)}
+.rt-modes .rt-mode span{font-size:14px;line-height:1;display:inline-block;transition:transform .3s cubic-bezier(.2,.85,.25,1),filter .25s ease;filter:grayscale(.55) opacity(.75)}
+.rt-modes .rt-mode.on{background:transparent;border:0}
+.rt-modes[data-mode="pedestrian"] .rt-mode.on{color:#04231F}
+.rt-modes[data-mode="auto"] .rt-mode.on,.rt-modes[data-mode="mt"] .rt-mode.on{color:#fff}
+.rt-modes .rt-mode.on span{filter:none;transform:scale(1.18) translateY(-1px);animation:modePop .45s cubic-bezier(.2,.85,.25,1)}
+@keyframes modePop{0%{transform:scale(.85)}55%{transform:scale(1.32) translateY(-3px)}100%{transform:scale(1.18) translateY(-1px)}}
+.rt-modes .rt-mode:focus-visible{outline:2px solid var(--rt-acc,#19B7A5);outline-offset:2px}
+:root[data-m4phase="night"] .rt-modes{background:#0F1A2E;border-color:var(--line2);box-shadow:inset 0 1px 3px rgba(0,0,0,.5)}
+:root[data-m4phase="night"] .rt-modes .rt-mode{color:var(--ink2)}
+:root[data-m4phase="night"] .rt-modes .rt-mode:hover{color:var(--ink)}
+:root[data-m4phase="night"] .rt-modes[data-mode="pedestrian"] .rt-mode.on{background:transparent;color:#04231F}
+:root[data-m4phase="night"] .rt-modes[data-mode="auto"] .rt-mode.on,:root[data-m4phase="night"] .rt-modes[data-mode="mt"] .rt-mode.on{background:transparent;color:#fff}
+/* линия маршрута красится в цвет способа */
+.rt-line{stroke:var(--rt-acc,#19B7A5)}
+.rt-dot{fill:var(--rt-acc,#FF6B5E);animation-duration:var(--rt-speed,2.8s)}
+.rt-pin{fill:var(--rt-acc,#FF6B5E)}
+.btn-route:hover{border-color:var(--rt-acc,#FF6B5E);box-shadow:0 10px 24px color-mix(in srgb,var(--rt-acc,#FF6B5E) 26%,transparent)}
+.btn-route:hover .rt-line{stroke:var(--rt-acc,#FF6B5E)}
+.rt-txt i.flash{animation:metaFlash .55s ease-out}
+@keyframes metaFlash{0%{color:var(--rt-acc,#19B7A5);transform:translateX(-3px)}100%{color:var(--ink2);transform:none}}
+@media (max-width:520px){
+  .dlg-go{flex-direction:column;align-items:stretch;gap:8px}
+  .rt-modes{display:flex;width:100%}
+  .rt-modes .rt-mode{flex:1;justify-content:center;padding:9px 8px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .rt-thumb,.rt-modes .rt-mode span,.rt-txt i.flash{transition:none;animation:none!important}
+  .rt-modes .rt-mode.on span{transform:scale(1.12)}
+}

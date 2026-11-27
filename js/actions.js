@@ -1,7 +1,12 @@
-/* Месте4ко · карточка места: маршрут с расчётом и розовое «Запомнить место» */
+/* Месте4ко · карточка места: сегментный переключатель дороги и розовая память */
 (function(){
 if(window.__m4act||typeof PLACES==='undefined')return;window.__m4act=1;
-var MODES={pedestrian:{n:'пешком',v:4.8,add:0},auto:{n:'на авто',v:26,add:3},mt:{n:'на транспорте',v:17,add:8}};
+var MODES={
+ pedestrian:{n:'пешком',v:4.8,add:0,acc:'#19B7A5',speed:'2.9s'},
+ auto:{n:'на авто',v:26,add:3,acc:'#FF6B5E',speed:'1.2s'},
+ mt:{n:'на транспорте',v:17,add:8,acc:'#3D6BD6',speed:'1.9s'}
+};
+var ORDER=['pedestrian','auto','mt'];
 var mode='pedestrian';
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function byId(id){for(var i=0;i<PLACES.length;i++)if(PLACES[i].id===id)return PLACES[i];return null}
@@ -20,29 +25,87 @@ function link(p){
  var from=window.__m4me?(window.__m4me.lat+','+window.__m4me.lng+'~'):'';
  return 'https://yandex.ru/maps/?rtext='+from+p.lat+','+p.lng+'&rtt='+mode;
 }
-function meta(p){
+function metaText(p){
  var km=kmTo(p),M=MODES[mode]||MODES.pedestrian;
  var min=Math.max(2,Math.round(km/M.v*60+M.add));
  var dist=km<1?Math.round(km*1000)+' м':km.toFixed(1).replace('.',',')+' км';
  return '≈ '+dist+' · '+min+' мин '+M.n+' · '+origin().label;
 }
-function syncRoute(){
- var p=byId(typeof currentId!=='undefined'?currentId:null);if(!p)return;
- var a=document.getElementById('pdRoute');if(a)a.href=link(p);
- var m=document.getElementById('pdRouteMeta');if(m)m.textContent=meta(p);
- var chips=document.querySelectorAll('#rtModes .rt-mode');
- for(var i=0;i<chips.length;i++)chips[i].classList.toggle('on',chips[i].getAttribute('data-rtt')===mode);
-}
-var modes=document.getElementById('rtModes');
-if(modes)modes.addEventListener('click',function(e){
- var b=e.target.closest?e.target.closest('.rt-mode'):null;if(!b)return;
- mode=b.getAttribute('data-rtt')||'pedestrian';syncRoute();
-});
 
-/* розовая кнопка памяти */
+/* ---- сегментный переключатель: ползунок загорается цветом способа ---- */
+function paintModes(hit){
+ var wrap=document.getElementById('rtModes');if(!wrap)return;
+ var thumb=wrap.querySelector('.rt-thumb');
+ if(!thumb){
+  thumb=document.createElement('span');
+  thumb.className='rt-thumb';thumb.setAttribute('aria-hidden','true');
+  wrap.insertBefore(thumb,wrap.firstChild);
+ }
+ wrap.setAttribute('data-mode',mode);
+ wrap.setAttribute('role','radiogroup');
+ wrap.setAttribute('aria-label','Способ добраться');
+ var btns=wrap.querySelectorAll('.rt-mode'),act=null;
+ for(var i=0;i<btns.length;i++){
+  var b=btns[i],on=b.getAttribute('data-rtt')===mode;
+  b.classList.toggle('on',on);
+  b.setAttribute('role','radio');
+  b.setAttribute('aria-checked',String(on));
+  b.setAttribute('tabindex',on?'0':'-1');
+  if(on)act=b;
+ }
+ var acts=document.querySelector('.dlg-actions');
+ if(acts){
+  acts.setAttribute('data-mode',mode);
+  acts.style.setProperty('--rt-acc',MODES[mode].acc);
+  acts.style.setProperty('--rt-speed',MODES[mode].speed);
+ }
+ if(act&&act.offsetWidth){
+  thumb.style.width=act.offsetWidth+'px';
+  thumb.style.height=act.offsetHeight+'px';
+  thumb.style.transform='translate('+act.offsetLeft+'px,'+act.offsetTop+'px)';
+  thumb.classList.add('ready');
+  if(hit&&!reduce){thumb.classList.remove('hit');void thumb.offsetWidth;thumb.classList.add('hit')}
+ }
+}
+function syncRoute(hit){
+ paintModes(hit);
+ var p=byId(typeof currentId!=='undefined'?currentId:null);
+ var a=document.getElementById('pdRoute'),m=document.getElementById('pdRouteMeta');
+ if(!p){if(m)m.textContent='выберите способ';return}
+ if(a)a.href=link(p);
+ if(m){
+  m.textContent=metaText(p);
+  if(hit&&!reduce){m.classList.remove('flash');void m.offsetWidth;m.classList.add('flash')}
+ }
+}
+function setMode(next,hit){
+ if(!MODES[next]||next===mode){if(next===mode)paintModes(true);return}
+ mode=next;syncRoute(hit!==false);
+}
+var wrap=document.getElementById('rtModes');
+if(wrap){
+ wrap.addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('.rt-mode'):null;if(!b)return;
+  e.preventDefault();
+  setMode(b.getAttribute('data-rtt'),true);
+  b.focus({preventScroll:true});
+ });
+ wrap.addEventListener('keydown',function(e){
+  var i=ORDER.indexOf(mode),n=null;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')n=ORDER[(i+1)%ORDER.length];
+  else if(e.key==='ArrowLeft'||e.key==='ArrowUp')n=ORDER[(i+ORDER.length-1)%ORDER.length];
+  else if(e.key===' '||e.key==='Enter'){e.preventDefault();paintModes(true);return}
+  if(!n)return;
+  e.preventDefault();setMode(n,true);
+  var b=wrap.querySelector('.rt-mode[data-rtt="'+n+'"]');if(b)b.focus({preventScroll:true});
+ });
+}
+
+/* ---- розовая кнопка памяти ---- */
 pdSave=function(){
  var b=document.getElementById('pdSave');if(!b)return;
- var on=(typeof S!=='undefined')&&S.saved.has(typeof currentId!=='undefined'?currentId:null);
+ var id=(typeof currentId!=='undefined')?currentId:null;
+ var on=(typeof S!=='undefined')&&S.saved.has(id);
  b.classList.toggle('on',on);
  b.setAttribute('aria-pressed',String(on));
  var e=b.querySelector('.fav-emoji'),l=b.querySelector('.fav-label');
@@ -71,13 +134,19 @@ if(sb)sb.addEventListener('click',function(){
  }
 });
 
-/* при открытии карточки: считаем дорогу и выбираем способ */
+/* ---- открытие карточки ---- */
 var _open=openPlace;
 openPlace=function(id){
  _open(id);
  var p=byId(id);if(!p)return;
  mode=kmTo(p)>2.5?'auto':'pedestrian';
- syncRoute();pdSave();
+ syncRoute(false);pdSave();
+ requestAnimationFrame(function(){paintModes(false);syncRoute(false)});
+ setTimeout(function(){paintModes(false)},160);
 };
-window.addEventListener('online',syncRoute);
+var rz;
+window.addEventListener('resize',function(){clearTimeout(rz);rz=setTimeout(function(){paintModes(false)},120)});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){paintModes(false)});
+window.addEventListener('online',function(){syncRoute(false)});
+paintModes(false);
 })();
