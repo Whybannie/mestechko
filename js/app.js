@@ -271,7 +271,7 @@ function openPlace(id){
   const st=$('#pdStamp');
   if(p.draft){st.className='stamp recheck';st.textContent='Черновик'}else if(recheck(p)){st.className='stamp recheck';st.textContent='На проверке'}else{st.className='stamp';st.textContent='Проверено '+fmtDate(p.checked)}
   $('#pdSrc').innerHTML=p.src+(p.credit?` · <a href="${safeUrl(p.credit.page)}" target="_blank" rel="noopener">фото: ${escH(p.credit.license)}${p.credit.note?' · '+escH(p.credit.note):''}</a>`:'');
-  $('#pdRoute').href=placeRoute(p);$('#pdMap').href=mapUrl(p);pdSave();showDialog($('#placeDlg'));
+  var _pr=document.getElementById('pdRoute');if(_pr)_pr.href=placeRoute(p);var _pm=document.getElementById('pdMap');if(_pm)_pm.href=mapUrl(p);pdSave();showDialog($('#placeDlg'));
 }
 function openReport(id){
   $('#rpPlace').innerHTML=PLACES.map(p=>`<option value="${p.id}" ${p.id===id?'selected':''}>${p.name}</option>`).join('');
@@ -878,7 +878,7 @@ if(geoBtn){var nb=geoBtn.cloneNode(true);geoBtn.parentNode.replaceChild(nb,geoBt
   if(!navigator.geolocation){toast('Браузер не отдаёт геолокацию');return}
   toast('Ищем тебя…');
   navigator.geolocation.getCurrentPosition(function(pos){
-   var c=P(pos.coords.latitude,pos.coords.longitude);
+   window.__m4me={lat:pos.coords.latitude,lng:pos.coords.longitude};var c=P(pos.coords.latitude,pos.coords.longitude);
    gMe.innerHTML='<g data-x="'+c[0].toFixed(1)+'" data-y="'+c[1].toFixed(1)+'"><circle r="16" fill="var(--m4-me)" opacity=".18"/><circle r="6" fill="var(--m4-me)" stroke="#fff" stroke-width="2.5"/></g>';
    setView(c[0]-vb.w/2,c[1]-vb.h/2,Math.min(vb.w,W*0.22),true);toast('Ты здесь');
   },function(){toast('Не удалось определить место')},{timeout:9000,maximumAge:60000});});}

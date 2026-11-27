@@ -238,11 +238,23 @@
       <div class="dlg-cell"><div class="l">Особенности</div><div class="v" id="pdFeat"></div></div>
     </div>
     <div class="dlg-verify"><span class="stamp" id="pdStamp"></span><span class="src" id="pdSrc"></span><button class="linklike" id="pdReport" type="button">Нашли ошибку?</button></div>
+    <div class="dlg-go">
+      <span class="dlg-go-l">Как добираться</span>
+      <div class="rt-modes" id="rtModes">
+        <button type="button" class="rt-mode on" data-rtt="pedestrian"><span aria-hidden="true">🚶</span>Пешком</button>
+        <button type="button" class="rt-mode" data-rtt="auto"><span aria-hidden="true">🚗</span>Авто</button>
+        <button type="button" class="rt-mode" data-rtt="mt"><span aria-hidden="true">🚌</span>Транспорт</button>
+      </div>
+    </div>
     <div class="dlg-actions">
-      <a class="btn btn-red" id="pdRoute" target="_blank" rel="noopener">Маршрут</a>
-      <button class="btn btn-blue" id="pdOnMap" type="button">На карте города</button>
-      <a class="btn btn-line" id="pdMap" target="_blank" rel="noopener">Яндекс Карты</a>
-      <button class="btn btn-line" id="pdSave" type="button" aria-pressed="false">Сохранить</button>
+      <a class="btn btn-route" id="pdRoute" target="_blank" rel="noopener">
+        <span class="rt-viz" aria-hidden="true"><svg viewBox="0 0 64 26"><path class="rt-line" d="M5 20C18 6 34 24 51 9"/><circle class="rt-dot" cx="5" cy="20" r="3.2"/><path class="rt-pin" d="M55 3.5a5.2 5.2 0 0 0-5.2 5.2c0 3.8 5.2 9.3 5.2 9.3s5.2-5.5 5.2-9.3A5.2 5.2 0 0 0 55 3.5z"/><circle cx="55" cy="8.7" r="1.9" fill="#FFFDF9"/></svg></span>
+        <span class="rt-txt"><b>Маршрут</b><i id="pdRouteMeta">считаем дорогу…</i></span>
+      </a>
+      <button class="btn btn-fav" id="pdSave" type="button" aria-pressed="false">
+        <span class="fav-emoji" aria-hidden="true">🤍</span>
+        <span class="fav-label">Запомнить место</span>
+      </button>
     </div>
   </div>
 </dialog>

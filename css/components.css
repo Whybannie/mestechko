@@ -577,3 +577,52 @@ html.m4-slow .rv{opacity:1;transform:none;transition:none}
 :root[data-m4phase="night"] .ai-say{background:rgba(47,212,190,.12);border-color:rgba(47,212,190,.3)}
 :root[data-m4phase="night"] .promo-dis{background:rgba(255,207,107,.12);border-color:rgba(255,207,107,.4);color:var(--ink2)}
 @media (max-width:760px){.ai-say{font-size:12.5px;padding:10px 12px}.ai-say button{margin-left:0}}
+
+/* ===== Карточка места: маршрут и память ===== */
+.dlg-go{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.dlg-go-l{font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+.rt-modes{display:flex;gap:6px;flex-wrap:wrap}
+.rt-mode{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;border:1px solid var(--line2);background:var(--card);font-size:12.5px;font-weight:700;color:var(--ink2);transition:.15s;line-height:1.2}
+.rt-mode span{font-size:14px;line-height:1}
+.rt-mode:hover{border-color:var(--teal);transform:translateY(-1px)}
+.rt-mode.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+:root[data-m4phase="night"] .rt-mode.on{background:#E9EFFB;color:#0C1424;border-color:#E9EFFB}
+.dlg-actions{margin-top:12px}
+.btn-route{flex:1.15;justify-content:flex-start;gap:11px;padding:11px 16px;text-align:left;white-space:normal;background:var(--card);border:1.5px solid var(--line2);color:var(--ink);box-shadow:none}
+.btn-route:hover{border-color:var(--coral,#FF6B5E);box-shadow:0 10px 24px rgba(255,107,94,.18);transform:translateY(-2px)}
+.rt-viz{flex:none;width:56px;height:24px}
+.rt-viz svg{width:100%;height:100%;overflow:visible;display:block}
+.rt-line{fill:none;stroke:var(--teal,#19B7A5);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:5 5;animation:rtMarch 1.5s linear infinite}
+@keyframes rtMarch{to{stroke-dashoffset:-20}}
+.btn-route:hover .rt-line{animation-duration:.6s;stroke:var(--coral,#FF6B5E)}
+.rt-dot{fill:var(--coral,#FF6B5E);offset-path:path('M5 20C18 6 34 24 51 9');offset-distance:0%;animation:rtRun 2.8s linear infinite}
+@keyframes rtRun{to{offset-distance:100%}}
+.rt-pin{fill:var(--coral,#FF6B5E)}
+.rt-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rt-txt b{font-size:14.5px;font-weight:800;line-height:1.2}
+.rt-txt i{font-style:normal;font-size:11.5px;font-weight:600;color:var(--ink2);line-height:1.3}
+.btn-fav{position:relative;overflow:visible;flex:1;gap:9px;border:none;color:#fff;background:linear-gradient(135deg,#E00E6E,#B80D5C);box-shadow:0 8px 22px rgba(224,14,110,.34),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn-fav:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(224,14,110,.46),inset 0 1px 0 rgba(255,255,255,.26)}
+.btn-fav.on{background:linear-gradient(135deg,#C90D62,#8F0A48);box-shadow:0 0 0 3px rgba(255,111,176,.38),0 8px 22px rgba(224,14,110,.3)}
+.btn-fav.pulse{animation:favRing .72s ease-out}
+@keyframes favRing{0%{box-shadow:0 0 0 0 rgba(255,111,176,.6)}100%{box-shadow:0 0 0 20px rgba(255,111,176,0)}}
+.fav-emoji{display:inline-block;font-size:17px;line-height:1;animation:favFloat 2.6s ease-in-out infinite}
+@keyframes favFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.09)}}
+.btn-fav.on .fav-emoji{animation:favBeat 1.35s ease-in-out infinite}
+@keyframes favBeat{0%,100%{transform:scale(1)}14%{transform:scale(1.24)}28%{transform:scale(1)}42%{transform:scale(1.15)}58%{transform:scale(1)}}
+.btn-fav:hover .fav-emoji{animation:favWiggle .6s ease}
+@keyframes favWiggle{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-14deg) scale(1.16)}60%{transform:rotate(12deg) scale(1.16)}}
+.fav-label{font-size:14.5px;font-weight:800;line-height:1.2}
+.fav-pop{position:absolute;left:50%;top:42%;font-size:17px;line-height:1;pointer-events:none;z-index:6;animation:favPop .98s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes favPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}18%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.18) rotate(var(--rz))}}
+:root[data-m4phase="night"] .btn-route{background:var(--card);border-color:var(--line2)}
+@media (max-width:520px){
+  .dlg-actions{flex-direction:column}
+  .dlg-actions .btn{width:100%;min-width:0}
+  .dlg-go{gap:8px}
+  .rt-mode{padding:8px 12px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .rt-line,.rt-dot,.fav-emoji,.btn-fav.on .fav-emoji,.btn-fav:hover .fav-emoji,.btn-fav.pulse{animation:none!important}
+  .fav-pop{display:none}
+}
