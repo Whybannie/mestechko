@@ -564,3 +564,16 @@ html.m4-slow .rv{opacity:1;transform:none;transition:none}
 }
 :root[data-m4phase="night"] .ft-col a{background:var(--card);border-color:var(--line)}
 :root[data-m4phase="night"] .ft-legal a,:root[data-m4phase="night"] .ft-legal .linklike{color:var(--ink);border-bottom-color:var(--line)}
+
+/* ===== Умный поиск и промо ===== */
+.ai-say{display:none;align-items:center;flex-wrap:wrap;gap:7px;margin:0 0 14px;padding:11px 14px;border-radius:12px;background:var(--teal-t,#E3F4F1);border:1px solid rgba(25,183,165,.35);font-size:13px}
+.ai-say.on{display:flex}
+.ai-say .ai-l{color:var(--ink2);font-weight:600}
+.ai-say b{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700;color:var(--ink)}
+.ai-say button{margin-left:auto;font-weight:800;font-size:12.5px;color:var(--coral-ink,#C9463B);white-space:nowrap}
+.promo-dis{margin:0 0 14px;font-size:12px;color:var(--ink2);padding:9px 13px;border-radius:10px;background:var(--amber-t,#FFF3D9);border:1px dashed var(--amber,#FFC400)}
+.promo-tag{position:absolute;right:11px;top:11px;z-index:3;background:var(--amber,#FFC400);color:#172B4D;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:5px 9px;border-radius:6px;border:1px solid rgba(23,43,77,.2)}
+.card .body>.promo-tag{position:static;align-self:flex-start;margin-bottom:2px}
+:root[data-m4phase="night"] .ai-say{background:rgba(47,212,190,.12);border-color:rgba(47,212,190,.3)}
+:root[data-m4phase="night"] .promo-dis{background:rgba(255,207,107,.12);border-color:rgba(255,207,107,.4);color:var(--ink2)}
+@media (max-width:760px){.ai-say{font-size:12.5px;padding:10px 12px}.ai-say button{margin-left:0}}
