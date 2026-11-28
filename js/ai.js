@@ -226,7 +226,7 @@ if(popBtn){
   window.__m4Limit=18;window.__m4Sig=null;render();
   if(window.__m4Pop){
    var top=affTop();
-   var msg=top.length?'Подобрано по вашим интересам: '+top.map(function(k){return k.split(':')[1]}).join(', '):'Пока нет истории — показываем выбор редакции. Интересы копятся только в этом браузере.';
+   var msg=top.length?'Подобрано по вашим интересам: '+top.map(function(k){return k.split(':')[1]}).join(', '):'Пока нет истории — показываем выбор редакции';
    if(typeof toast==='function')toast(msg,'Сбросить',function(){affWrite({});render();if(typeof toast==='function')toast('Интересы сброшены')});
   }
  });
